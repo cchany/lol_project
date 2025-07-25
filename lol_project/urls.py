@@ -19,8 +19,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import os
+from lolapp import views  # lolapp.views를 import
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('lolapp.urls')),
+    path('', views.main, name='main'),  # 루트 URL에 main 뷰 연결
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
