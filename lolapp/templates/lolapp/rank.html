@@ -1,0 +1,206 @@
+{% load static %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>순위보기</title>
+    <style>
+        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; color: #e0e0e0; }
+        .container { max-width: 950px; margin: 40px auto; background: #23232b; border-radius: 10px; padding: 24px; }
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 18px; }
+        .tab-btn { padding: 8px 18px; border: none; border-radius: 6px 6px 0 0; background: #e3eaf6; color: #1976d2; font-weight: 500; cursor: pointer; }
+        .tab-btn.active { background: #23232b; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .section-title { font-size: 1.2em; margin: 24px 0 12px 0; color: #90caf9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #444; padding: 8px 4px; text-align: center; }
+        th { background: #1976d2; color: #fff; }
+        .line-filter { margin-bottom: 12px; }
+        .line-btn { padding: 4px 12px; margin-right: 6px; border: none; border-radius: 4px; background: #444; color: #fff; cursor: pointer; }
+        .line-btn.active { background: #1976d2; }
+        .champion-img { width: 32px; height: 32px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
+        .user-card { display: flex; align-items: center; background: #32323e; border-radius: 8px; padding: 10px 16px; margin-bottom: 8px; }
+        .user-rank { width: 32px; font-weight: bold; color: #90caf9; }
+        .user-name { flex: 1; font-weight: bold; }
+        .user-score { color: #ffd600; font-weight: bold; }
+        .vs-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .vs-table th, .vs-table td { border: none; background: #32323e; padding: 12px 8px; }
+        .vs-table th { color: #90caf9; font-size: 1em; }
+        .vs-table .win { color: #81c784; font-weight: bold; }
+        .vs-table .lose { color: #ef5350; font-weight: bold; }
+        .kda-score { color: #4caf50; font-weight: bold; margin-left: 8px; }
+        .death { color: #ef5350; font-weight: bold; }
+        .vs-table .win, .vs-table .win * { color: #81c784 !important; font-weight: bold; }
+        .vs-table .lose, .vs-table .lose * { color: #ef5350 !important; font-weight: bold; }
+        .kda-score { margin-left: 8px; }
+        .vs-table td { font-size: 1.05em; }
+    </style>
+    <script>
+        function showTab(idx) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i===idx));
+            document.querySelectorAll('.tab-content').forEach((tab, i) => tab.classList.toggle('active', i===idx));
+        }
+        function filterLine(tabIdx, line) {
+            document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.line === line));
+            document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-row').forEach(row => {
+                row.style.display = (line === 'all' || row.dataset.line === line) ? '' : 'none';
+            });
+        }
+        window.onload = function() { showTab(0); };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="tab-menu">
+            <button class="tab-btn" onclick="showTab(0)">순위표🥇🥈🥉</button>
+            <button class="tab-btn" onclick="showTab(1)">챔피언별 승률🚩</button>
+            <button class="tab-btn" onclick="showTab(2)">라인별 순위표🔥</button>
+            <button class="tab-btn" onclick="showTab(3)">user별 상대전적🥊🥊</button>
+        </div>
+        <!-- 1. 순위표 -->
+        <div class="tab-content active">
+            <div class="section-title">유저 순위표</div>
+            <table>
+                <tr>
+                    <th>순위</th><th>유저</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA평균</th><th>CS평균</th><th>데미지평균</th><th>평균Rank점수</th>
+                </tr>
+                {% for user in real_user_stats %}
+                    <tr
+                      {% if forloop.counter == 1 %}
+                        style="background:#ffd700; font-weight:bold; color:#000;"
+                      {% elif forloop.counter == 2 %}
+                        style="background:#c0c0c0; font-weight:bold; color:#000;"
+                      {% elif forloop.counter == 3 %}
+                        style="background:#cd7f32; font-weight:bold; color:#000;"
+                      {% endif %}
+                    >
+                      <td style="text-align:left; width:auto;">
+                        <span style="display:inline-block; min-width:48px;">
+                          {{ forloop.counter }}
+                          {% if forloop.counter == 1 %} <span style="margin-left:2px;">🥇</span>
+                          {% elif forloop.counter == 2 %} <span style="margin-left:2px;">🥈</span>
+                          {% elif forloop.counter == 3 %} <span style="margin-left:2px;">🥉</span>
+                          {% elif forloop.last %} <span style="margin-left:2px;">💩</span>
+                          {% endif %}
+                        </span>
+                      </td>
+                      <td>{{ user.name }}</td>
+                      <td>{{ user.total }}</td>
+                      <td>{{ user.win }}</td>
+                      <td>{{ user.lose }}</td>
+                      <td>{{ user.winrate }}%</td>
+                      <td>{{ user.kda }}</td>
+                      <td>{{ user.cs_avg }}</td>
+                      <td>{{ user.dmg_avg }}</td>
+                      <td>{{ user.avg_rank_score }}</td>
+                    </tr>
+                {% empty %}
+                <tr><td colspan="10">데이터가 없습니다.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+        <!-- 2. 챔피언별 승률 -->
+        <div class="tab-content">
+            <div class="section-title">챔피언별 승률🚩</div>
+            <div class="line-filter">
+                <button class="line-btn active" data-line="all" onclick="filterLine(1, 'all')">전체</button>
+                <button class="line-btn" data-line="top" onclick="filterLine(1, 'top')">탑</button>
+                <button class="line-btn" data-line="jungle" onclick="filterLine(1, 'jungle')">정글</button>
+                <button class="line-btn" data-line="mid" onclick="filterLine(1, 'mid')">미드</button>
+                <button class="line-btn" data-line="adc" onclick="filterLine(1, 'adc')">원딜</button>
+                <button class="line-btn" data-line="support" onclick="filterLine(1, 'support')">서폿</button>
+            </div>
+            <table>
+                <tr>
+                    <th>챔피언</th><th>라인</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA</th>
+                </tr>
+                {% for champ in champ_stats %}
+                <tr class="line-row" data-line="{{ champ.line }}">
+                    <td><img src="{% static 'img/' %}{{ champ.champion_img }}.png" class="champion-img">{{ champ.champion }}</td>
+                    <td>{{ champ.line }}</td>
+                    <td>{{ champ.games }}</td>
+                    <td>{{ champ.win }}</td>
+                    <td>{{ champ.lose }}</td>
+                    <td>{{ champ.winrate }}%</td>
+                    <td>{{ champ.kda }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">데이터가 없습니다.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+        <!-- 3. 라인별 순위표 -->
+        <div class="tab-content">
+            <div class="section-title">라인별 순위표🥇🥈🥉</div>
+            <div class="line-filter">
+                <button class="line-btn active" data-line="all" onclick="filterLine(2, 'all')">전체</button>
+                <button class="line-btn" data-line="top" onclick="filterLine(2, 'top')">탑</button>
+                <button class="line-btn" data-line="jungle" onclick="filterLine(2, 'jungle')">정글</button>
+                <button class="line-btn" data-line="mid" onclick="filterLine(2, 'mid')">미드</button>
+                <button class="line-btn" data-line="adc" onclick="filterLine(2, 'adc')">원딜</button>
+                <button class="line-btn" data-line="support" onclick="filterLine(2, 'support')">서폿</button>
+            </div>
+            <table>
+                <tr>
+                    <th>순위</th><th>유저</th><th>라인</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA평균</th><th>CS평균</th><th>데미지평균</th><th>Rank점수</th>
+                </tr>
+                {% for user in line_user_stats %}
+                <tr class="line-row" data-line="{{ user.line }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.line }}</td>
+                    <td>{{ user.total }}</td>
+                    <td>{{ user.win }}</td>
+                    <td>{{ user.lose }}</td>
+                    <td>{{ user.winrate }}%</td>
+                    <td>{{ user.kda }}</td>
+                    <td>{{ user.cs_avg }}</td>
+                    <td>{{ user.dmg_avg }}</td>
+                    <td>{{ user.rank_score }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="11">데이터가 없습니다.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+        <!-- 4. user별 상대전적 -->
+        <div class="tab-content">
+            <div class="section-title">유저별 상대전적🥊</div>
+            <div class="line-filter">
+                <button class="line-btn active" data-line="all" onclick="filterLine(3, 'all')">전체</button>
+                <button class="line-btn" data-line="top" onclick="filterLine(3, 'top')">탑</button>
+                <button class="line-btn" data-line="jungle" onclick="filterLine(3, 'jungle')">정글</button>
+                <button class="line-btn" data-line="mid" onclick="filterLine(3, 'mid')">미드</button>
+                <button class="line-btn" data-line="adc" onclick="filterLine(3, 'adc')">원딜</button>
+                <button class="line-btn" data-line="support" onclick="filterLine(3, 'support')">서폿</button>
+            </div>
+            <table class="vs-table">
+                <tr>
+                    <th>우세😀</th><th>열세😭</th>
+                </tr>
+                {% for line, vs_list in vs_stats.items %}
+                    {% for pair in vs_list %}
+                        <tr class="line-row" data-line="{{ line }}">
+                            <td class="win">
+                                <div style="font-size:1.1em;">{{ pair.0.name }}</div>
+                                <div>{{ pair.0.k_sum }} / {{ pair.0.d_sum }} / {{ pair.0.a_sum }}</div>
+                                <div class="kda-score">평점 {{ pair.0.kda }}</div>
+                                <div style="font-size:0.95em;">승률: {{ pair.0.winrate }}%</div>
+                            </td>
+                            <td class="lose">
+                                <div style="font-size:1.1em;">{{ pair.1.name }}</div>
+                                <div>{{ pair.1.k_sum }} / {{ pair.1.d_sum }} / {{ pair.1.a_sum }}</div>
+                                <div class="kda-score">평점 {{ pair.1.kda }}</div>
+                                <div style="font-size:0.95em;">승률: {{ pair.1.winrate }}%</div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html> 

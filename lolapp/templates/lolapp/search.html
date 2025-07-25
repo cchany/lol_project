@@ -1,0 +1,161 @@
+{% load static %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>전적검색</title>
+    <style>
+        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; color: #e0e0e0; }
+        .container { max-width: 950px; margin: 40px auto; background: #23232b; border-radius: 10px; padding: 24px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 24px; }
+        .search-bar input { flex: 1; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #181820; color: #fff; }
+        .search-bar button { padding: 8px 16px; background: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        .section-title { font-size: 1.2em; margin: 32px 0 12px 0; color: #90caf9; }
+        .champion-list { display: flex; flex-direction: column; gap: 8px; }
+        .champion-card { display: flex; align-items: center; background: #32323e; border-radius: 8px; padding: 12px 20px; }
+        .champion-card img { width: 48px; height: 48px; border-radius: 50%; margin-right: 16px; }
+        .champion-info { flex: 1; }
+        .champion-name { font-weight: bold; font-size: 1.1em; }
+        .champion-cs { font-size: 0.95em; color: #bdbdbd; }
+        .champion-kda { color: #4caf50; font-weight: bold; margin-left: 12px; }
+        .champion-score { color: #26c6da; margin-left: 12px; }
+        .champion-winrate { margin-left: 12px; font-weight: bold; }
+        .champion-winrate.red { color: #ef5350; }
+        .champion-winrate.green { color: #81c784; }
+        .champion-games { margin-left: 12px; color: #bdbdbd; }
+        .team-list { background: #23232b; border-radius: 8px; padding: 12px 20px; margin-bottom: 24px; }
+        .team-user { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
+        .team-user:last-child { border-bottom: none; }
+        .team-user img { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; }
+        .team-user-info { flex: 1; }
+        .team-user-name { font-weight: bold; }
+        .team-user-level { font-size: 0.95em; color: #bdbdbd; margin-left: 8px; }
+        .team-user-record { margin-right: 24px; }
+        .team-user-winrate { font-weight: bold; min-width: 48px; text-align: right; }
+        .team-user-winrate.red { color: #ef5350; }
+        .team-user-winrate.green { color: #81c784; }
+        .game-list { display: flex; flex-direction: column; gap: 16px; }
+        .game-card { background: #26324a; border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; border-left: 6px solid #1976d2; }
+        .game-card.lose { border-left: 6px solid #ef5350; }
+        .game-champion { display: flex; align-items: center; margin-right: 20px; }
+        .game-champion img { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
+        .game-info { flex: 1; }
+        .game-kda { font-size: 1.1em; font-weight: bold; }
+        .game-kda .death { color: #ef5350; }
+        .game-kda .score { color: #4caf50; margin-left: 8px; }
+        .game-detail { font-size: 0.95em; color: #bdbdbd; margin-top: 2px; }
+        .game-vs { min-width: 80px; text-align: right; font-size: 1em; color: #bdbdbd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form class="search-bar" method="get" action="{% url 'search' %}">
+            <input type="text" name="name" placeholder="소환사명이나 이름을 입력하세요" value="{{ query }}">
+            <button type="submit">검색</button>
+        </form>
+
+        {% if user %}
+        <!-- 최근 게임 요약 박스 (이미지 스타일) -->
+        <div class="recent-summary" style="background:#23232b; border-radius:16px; padding:24px 32px; margin-bottom:32px; display:flex; gap:32px; align-items:center; box-shadow:0 2px 8px #0002;">
+            <!-- 왼쪽: 승률/전적/KDA/rank_score -->
+            <div style="min-width:180px; text-align:center;">
+                <div style="width:90px; height:90px; margin:0 auto 8px auto; position:relative;">
+                    <!-- 도넛차트: 승/패 비율 -->
+                    <svg width="90" height="90" viewBox="0 0 36 36" style="transform:rotate(-90deg);">
+                        <!-- 패배(빨강) 전체 원 -->
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="#c62828" stroke-width="4" />
+                        <!-- 승리(파랑) 원호 -->
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="#1976d2" stroke-width="4" stroke-dasharray="{{ win_percent }},100" stroke-dashoffset="0" />
+                    </svg>
+                    <span style="position:absolute; width:100%; top:32px; left:0; text-align:center; font-size:1.3em; color:#ef5350;">{{ win_percent }}%</span>
+                </div>
+                <div style="font-size:1.1em; margin-bottom:2px;">{{ stats.total }}전 {{ stats.win }}승 {{ stats.lose }}패</div>
+                <div style="font-size:1.3em; font-weight:bold; margin-bottom:2px;">
+                    <span style="color:#e0e0e0;">{{ stats.kill|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span> /
+                    <span style="color:#ef5350;">{{ stats.death|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span> /
+                    <span style="color:#81c784;">{{ stats.assist|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span>
+                    <span style="font-size:1.5em; color:#fff; margin-left:8px;">{{ stats.kda }}:1</span>
+                </div>
+                <div style="color:#ffd600; font-size:1em;">Rank {{ stats.rank_score }}</div>
+            </div>
+            <!-- 가운데: 플레이한 챔피언(최근 20게임) -->
+            <div style="flex:1; min-width:220px;">
+                <div class="section-title" style="margin:0 0 8px 0;">플레이한 챔피언👑</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    {% for champ in champion_stats|slice:':3' %}
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <img src="{% static 'img/' %}{{ champ.champion_img }}.png" style="width:32px; height:32px; border-radius:50%;">
+                        <span style="font-weight:bold; color:{% if champ.winrate >= 60 %}#ef5350{% elif champ.winrate == 100 %}#81c784{% else %}#ffd600{% endif %};">{{ champ.winrate }}%</span>
+                        <span style="color:#bdbdbd;">({{ champ.win }}승 / {{ champ.lose }}패)</span>
+                        <span style="color:#4caf50; font-weight:bold; margin-left:8px;">{{ champ.kda }} 평점</span>
+                    </div>
+                    {% empty %}
+                    <div style="color:#bdbdbd;">플레이한 챔피언 데이터 없음</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- 오른쪽: 선호 포지션 (라인별 bar) -->
+            <div style="min-width:180px; text-align:center;">
+                <div class="section-title" style="margin:0 0 8px 0;">선호 포지션</div>
+                <div style="display:flex; gap:8px; align-items:end; height:60px; justify-content:center;">
+                    {% for bar in line_bars %}
+                    <div style="width:18px; height:{{ bar.height }}px; background:{{ bar.color }}; border-radius:6px 6px 0 0;"></div>
+                    {% endfor %}
+                </div>
+                <div style="display:flex; gap:8px; justify-content:center; margin-top:4px; font-size:1.2em; color:#bdbdbd;">
+                    <span>🛡️</span><span>🌿</span><span>⚔️</span><span>🏹</span><span>✨</span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 2,3번: 하단 2단(좌:팀원, 우:경기기록) -->
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+            <!-- 2번: 같은 팀 소환사 (왼쪽) -->
+            <div style="flex:0 0 320px; min-width:220px; background:#23232b; border-radius:32px; padding:28px 18px 28px 18px;">
+                <div class="section-title">같은 팀으로 게임한 소환사들🧑🏻‍❤️‍💋‍🧑🏻</div>
+                <div class="team-list" style="background:none; padding:0;">
+                    {% for team in team_users %}
+                    <div class="team-user">
+                        <img src="{% static 'img/logo.png' %}">
+                        <div class="team-user-info">
+                            <span class="team-user-name">{{ team.name }}</span>
+                        </div>
+                        <div class="team-user-record">{{ team.win }}승 / {{ team.lose }}패<br>{{ team.games }} 게임</div>
+                        <div class="team-user-winrate {% if team.winrate >= 60 %}green{% elif team.winrate <= 40 %}red{% endif %}">{{ team.winrate }}%</div>
+                    </div>
+                    {% empty %}
+                    <div style="color:#bdbdbd; padding:16px;">같이 한 팀원이 없습니다.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- 3번: 게임 기록 (오른쪽) -->
+            <div style="flex:1; background:#23232b; border-radius:48px; padding:32px 32px 32px 32px; min-width:320px;">
+                <div class="section-title">게임 기록🎮</div>
+                <div class="game-list">
+                    {% for game in game_records %}
+                    <div class="game-card {% if game.result == 'lose' %}lose{% else %}win{% endif %}" style="background:{% if game.result == 'lose' %}#c62828{% else %}#1976d2{% endif %}; color:#fff; border:none;">
+                        <div class="game-champion">
+                            <img src="{% static 'img/' %}{{ game.champion_img }}.png">
+                            <span>{{ game.champion }}</span>
+                        </div>
+                        <div class="game-info">
+                            <div class="game-kda"><span>{{ game.kill }}</span> / <span class="death">{{ game.death }}</span> / <span>{{ game.assist }}</span> <span class="score">{{ game.kda }}:1 평점</span></div>
+                            <div class="game-detail">CS {{ game.cs }} | 딜량 {{ game.damage }}</div>
+                        </div>
+                        <div class="game-vs">상대: {{ game.opponent }}</div>
+                    </div>
+                    {% empty %}
+                    <div style="color:#bdbdbd; padding:16px;">게임 기록이 없습니다.😒</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="color:#bdbdbd; padding:32px; text-align:center;">소환사명이나 이름을 검색해주세요.🔥</div>
+        {% endif %}
+    </div>
+</body>
+</html> 

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "lolstat",
+  "private_key_id": "9ac1e870573c7a4a4dc57e5647c4dc649d5afe4c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCtzgoplE1a7A5L\nfVxyGlz6vzeILJcgD1R2RiR05SJxuqf8FsOiv5XhQzt45eOG2Hi6aq8Hoqfq6/aF\nTe0TP0JdW8/10OA69y0fqOpzHJgC5W4Q4IWishZp6wwo/VbiC2wJAbRc2xO+E/Yo\nk/OMoI+HcPB9E39WaO79Ol16smVsx2IMi9HL79kOd/PUvU/WjirfQzxY21vjPR8V\nS8VdHzXMDLkzj7KUDVstIOCYHDJpa6bQvhEPAryYRyGravqb5DvNzJ7PlzeT3thX\nl2tM+5NUy3COnIhJqs9p4IiVnwqrz9PT6yoqw9G7aQ9la3Ku4DrXZGlGaX9BFzml\ndYboKfDrAgMBAAECggEAFAJphxnswe/1QVmgX/6K/88t3H6Ns4IwTiGLJu4ORhug\nJVSVl1IJNlLgMO3+gNLBK20G05E1VcVurzAmgBXDVS4xxfITLpawWjm/LBt5oLO7\nNTQ0DmQEUpNd5gYsj3+TI4JPunT6U+LGbyuBWYpOm+Azv6KUAWW5RewHQQ3ywVAO\nOJ74+Zxvi4y68cXZqvCRKXqbTmupidd0osw/eOGTOwKl3ZxmujBfARzOtcJ1T6nC\n8eBnJFup1hc6M74oQdQZbiF2oN32j7ILYHTxcggcEk/Yt4k0VekL1A1gcqYAEls2\nLl0SCKVWlaIohCb5Aha4hTVJv2rtQ4mMr+bIpNmEAQKBgQDpJyLaCh2F/LrLhjYV\nBqlBz1SU2AcOpJoNWYrAWxvxyH25h66cNcD661Qa/PSoHPhqi4+bRyiIJprLQu+m\nD4fAyjXcFq9O1eeL+7SJK9ERYvh3l43iAXTyq3+IM4UcCAaBO4D7jZzzOfpqEWpW\nOJN24UqUj60pHKiYyD6Fs8cC6wKBgQC+1hnkKOuQHAKg+lJRe/pZvcvQ1Clu0WrU\n2tZrigkZCfm2RcaK9wNI5Z5/a4uYv6Oh76H9gf9ioXpiDAt/b5xT2e1BeP8AMvgc\nMhLuYQl03gu8a+FKMVzbP1bFjFQhlxZKgCV+qe5EOlusi23REW+XNdyFdsFVwNrJ\n8BBXF+FKAQKBgArEzvxJKVHt+Wa7HTZdZ2XtwJdbXwATJDZno1v9GU5Sl1QBa1Q1\nu2MbiXfxpQ86v1KUfZ6La9jWB6JJxi3iW7/Q1yoCNjiq8pXpm04WowJtktJbQqdk\nr9UhjLNqxcQkrsA7UlrMEKq/S8yoX0P6Ov1rrHkuJa5Xb4YXAaRFSHTfAoGAQZ9N\n9+86UavQG5r4g5ymUgW5+G18cecBXYCDCyfESR/tBoin5VFbh82t2xMYRcZgdmb4\nxTvWngv5EY4ixgeTMiJWO5Vn2qGsP8XYTLCBl/ZjAr/2EJU44Qu+wt+mboaN28CF\nJDE7BasrqwGnGaVtQgn7csmLYfmXQqmSdOB5UAECgYBR6NxGIZu7nB774HN7VEbG\nGH9xwPiOSR5LN+mY9n2pnCD6bfBXI/BcT6nftVpT9XIvACYe4Q7WXuWexoNwRxvu\nZ+coTF8TXM/0NUeEiMkPmeC7fAFjJsxHdqkvy2pzHp7pd3Z0gi2DNUgjjuTtIrMK\nL2ykA4ziEd8uoKrDSRKoQw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "lol-stat@lolstat.iam.gserviceaccount.com",
+  "client_id": "115236354929612908870",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/lol-stat%40lolstat.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

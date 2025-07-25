@@ -1,0 +1,309 @@
+{% load static %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>경기결과입력</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; }
+        .flex { display: flex; gap: 32px; justify-content: center; margin-top: 40px; }
+        .champion-list { width: 290px; background: #222; color: #fff; border-radius: 8px; padding: 12px; min-height: 400px; }
+        .table-wrap { background: #fff; border-radius: 10px; padding: 18px; }
+        table { border-collapse: collapse; margin-top: 30px; }
+        th, td { border: 1px solid #bdbdbd; padding: 4px 2px; text-align: center; }
+        th { background: #23232b; color: #fff; font-size: 0.98em; }
+        .icon-cell { width: 38px; }
+        select { padding: 2px 4px; }
+        .champion-cell-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #888;
+            background: #222;
+            object-fit: cover;
+        }
+        .champion-cell-empty {
+            width: 32px; height: 32px; display: inline-block; background: #eee; border-radius: 6px; border: 1px dashed #bbb;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" action="" autocomplete="off">
+    {% csrf_token %}
+    <div class="flex">
+        <div class="champion-list">
+            <div style="text-align:center; font-weight:bold; font-size:1.08em;">챔피언 리스트</div>
+            <div style="margin: 10px 0 0 0; text-align: center;">
+                <input id="champ-search" type="text" placeholder="챔피언 이름 검색" style="width: 80%; padding: 6px 10px; border-radius: 6px; border: 1px solid #bbb; font-size: 1em;">
+            </div>
+            <div style="display: flex; gap: 6px; margin: 10px 0 12px 0; justify-content: center;" id="line-filter-group">
+                <button class="line-btn active" type="button" data-line="all"><i class="fa-solid fa-asterisk"></i></button>
+                <button class="line-btn" type="button" data-line="top"><i class="fa-solid fa-mountain"></i></button>
+                <button class="line-btn" type="button" data-line="jungle"><i class="fa-solid fa-tree"></i></button>
+                <button class="line-btn" type="button" data-line="mid"><i class="fa-solid fa-crown"></i></button>
+                <button class="line-btn" type="button" data-line="adc"><i class="fa-solid fa-crosshairs"></i></button>
+                <button class="line-btn" type="button" data-line="support"><i class="fa-solid fa-hand-holding-heart"></i></button>
+            </div>
+            <style>
+                .line-btn {
+                    background: #222;
+                    border: none;
+                    border-radius: 6px;
+                    width: 32px;
+                    height: 32px;
+                    color: #fff;
+                    font-size: 1.2em;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    outline: none;
+                    transition: background 0.2s;
+                }
+                .line-btn.active {
+                    background: #4a6cf7;
+                    color: #fff;
+                }
+            </style>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const btns = document.querySelectorAll('#line-filter-group .line-btn');
+                    const championItems = document.querySelectorAll('.champion-item');
+                    // 탑 라인 챔피언 이름 리스트
+                    const topList = [
+                        "말파이트","이렐리아","세트","워윅","피오라","잭스","모데카이저","아트록스","퀸","쉔","다리우스","케일","블라디미르","오른","우르곳","레넥톤","문도박사","가렌","티모","카밀","사이온","그라가스","갱플랭크","케넨","암베사","그웬","초가스","나서스","요릭","제이스","올라프","트린다미어","신지드","베인","리븐","아칼리","야스오","카시오페아","나르","클레드","볼리베어","오공","하이머딩거","사일러스","뽀삐","요네","자크","트런들","크산테","일라오이","오로라","라이즈","탐켄치","럼블","우디르"
+                    ];
+                    // 정글 라인 챔피언 이름 리스트
+                    const jungleList = [
+                        "트런들","자르반 4세","볼리베어","마스터이","브라이어","워윅","카직스","판테온","비에고","에코","샤코","녹턴","리신","신짜오","벨베스","킨드레드","아이번","케인","다이애나","오공","피들스틱","잭스","니달리","탈론","이블린","그레이브즈","엘리스","누누와 윌럼프","우디르","제드","나피리","그웬","릴리아","자크","헤카림","렝가","아무무","렉사이","바이","자이라","뽀삐","카서스","문도 박사","그라가스","쉬바나","세주아니","탈리야","키아나","스카너"
+                    ];
+                    // 미드 라인 챔피언 이름 리스트
+                    const midList = [
+                        "카타리나","다이애나","르블랑","갈리오","제드","말자하","블라디미르","사일러스","아칼리","트위스티드 페이트","조이","애니비아","벡스","에코","야스오","애니","신드라","흐웨이","제라스","아리","피즈","리산드라","아크샨","오리아나","럭스","빅토르","오로라","카사딘","이렐리아","베이가","탈리야","키아나","아우렐리온 솔","라이즈","니코","벨코즈","말파이트","탈론","멜","나피리","아지르","카시오페아","스웨인","직스","요네"
+                    ];
+                    // 원딜 라인 챔피언 이름 리스트
+                    const adcList = [
+                        "징크스","시비르","카이사","루시안","베인","트리스타나","진","애쉬","트위치","스몰더","케이틀린","코그모","닐라","유나라","아펠리오스","미스 포츈","제리","사미라","자야","직스", "세나", "드레이븐", "이즈리얼", "바루스", "코르키", "칼리스타"
+                    ];
+                    // 서포터 라인 챔피언 이름 리스트
+                    const supportList = [
+                        "룰루","나미","밀리오","쓰레쉬","브라움","소라카","잔나","바드","소나","렐","카르마","알리스타","질리언","레오나","블리츠크랭크","파이크","노틸러스","라칸","엘리스","모르가나","벨코즈","뽀삐","타릭","샤코","판테온","유미","럭스","세라핀","제라스","자이라","마오카이","세나","탐켄치","레나타 글라스크","니코","쉔","멜"
+                    ];
+                    btns.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            btns.forEach(b => b.classList.remove('active'));
+                            this.classList.add('active');
+                            const line = this.getAttribute('data-line');
+                            championItems.forEach(item => {
+                                const champName = item.getAttribute('data-champ-name');
+                                if (line === 'all') {
+                                    item.style.display = '';
+                                } else if (line === 'top') {
+                                    if (topList.includes(champName)) {
+                                        item.style.display = '';
+                                    } else {
+                                        item.style.display = 'none';
+                                    }
+                                } else if (line === 'jungle') {
+                                    if (jungleList.includes(champName)) {
+                                        item.style.display = '';
+                                    } else {
+                                        item.style.display = 'none';
+                                    }
+                                } else if (line === 'mid') {
+                                    if (midList.includes(champName)) {
+                                        item.style.display = '';
+                                    } else {
+                                        item.style.display = 'none';
+                                    }
+                                } else if (line === 'adc') {
+                                    if (adcList.includes(champName)) {
+                                        item.style.display = '';
+                                    } else {
+                                        item.style.display = 'none';
+                                    }
+                                } else if (line === 'support') {
+                                    if (supportList.includes(champName)) {
+                                        item.style.display = '';
+                                    } else {
+                                        item.style.display = 'none';
+                                    }
+                                } else {
+                                    item.style.display = '';
+                                }
+                            });
+                        });
+                    });
+                    const searchInput = document.getElementById('champ-search');
+                    searchInput.addEventListener('input', function() {
+                        const keyword = this.value.trim();
+                        championItems.forEach(item => {
+                            const champName = item.getAttribute('data-champ-name');
+                            if (champName.includes(keyword)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+
+                    // 라인별 선호 유저 리스트 (이름 기준)
+                    const topFav = ["김명준", "정상혁", "김현욱", "배영민", "최지수", "변용재"];
+                    const jungleFav = ["송찬영", "여우빈", "유승현", "유성국", "정상혁", "김기수"];
+                    const midFav = ["변용재", "이도현", "이상수", "정상혁"];
+                    const adcFav = ["강한솔", "김항래", "모상우", "김대훈"];
+                    const supportFav = ["김동연", "강고루", "강영훈", "조찬영", "김명준"];
+
+                    // 각 라인별 select id (user_0~user_4: 위팀, user_5~user_9: 아래팀)
+                    const selectIds = [
+                        "user_0", "user_1", "user_2", "user_3", "user_4",
+                        "user_5", "user_6", "user_7", "user_8", "user_9"
+                    ];
+                    const favLists = [
+                        topFav, jungleFav, midFav, adcFav, supportFav,
+                        topFav, jungleFav, midFav, adcFav, supportFav
+                    ];
+
+                    selectIds.forEach(function(selId, idx) {
+                        const fav = favLists[idx];
+                        const sel = document.getElementsByName(selId)[0];
+                        if (!sel) return;
+                        const opts = Array.from(sel.options);
+                        // 첫 번째(placeholder)는 그대로 두고, 나머지만 정렬
+                        const firstOpt = opts.shift();
+                        // 선호 유저 먼저
+                        const favOpts = fav.map(name => opts.find(o => o.text === name)).filter(Boolean);
+                        // 나머지 유저
+                        const restOpts = opts.filter(o => !fav.includes(o.text));
+                        sel.innerHTML = "";
+                        if (firstOpt) sel.appendChild(firstOpt);
+                        favOpts.forEach(o => {
+                            o.style.background = '#fffde7'; // 연노랑 형광
+                            o.style.fontWeight = 'bold';
+                            sel.appendChild(o);
+                        });
+                        restOpts.forEach(o => {
+                            o.style.background = '';
+                            o.style.fontWeight = '';
+                            sel.appendChild(o);
+                        });
+                    });
+
+                    // 챔피언 입력/되돌리기 기능
+                    const championItemsFresh = document.querySelectorAll('.champion-item');
+                    const championCells = document.querySelectorAll('.champion-cell');
+                    let championOrder = 0;
+                    let championHistory = [];
+                    function resetChampionCells() {
+                        championCells.forEach(cell => {
+                            cell.innerHTML = `<span class='champion-cell-empty'></span>`;
+                        });
+                        championOrder = 0;
+                        championHistory = [];
+                    }
+                    function fillChampionCell(idx, champId, champName) {
+                        const cell = championCells[idx];
+                        cell.innerHTML = `<img src='${champId}' alt='${champName}' class='champion-cell-img'><input type='hidden' name='champion_${idx}' value='${champName}'>`;
+                    }
+                    // 챔피언 클릭 시 중복 방지
+                    championItemsFresh.forEach(item => {
+                        item.addEventListener('click', function() {
+                            if (championOrder >= championCells.length) return;
+                            const champId = this.querySelector('img').getAttribute('src');
+                            const champName = this.querySelector('div').innerText;
+                            // 이미 입력된 챔피언인지 확인
+                            const usedChamps = Array.from(document.querySelectorAll('.champion-cell input[type=hidden]'))
+                                .map(input => input.value);
+                            if (usedChamps.includes(champName)) {
+                                alert('이미 선택된 챔피언입니다!');
+                                return;
+                            }
+                            fillChampionCell(championOrder, champId, champName);
+                            championHistory.push(championOrder);
+                            championOrder++;
+                        });
+                    });
+                    resetChampionCells();
+                    document.getElementById('champ-undo-btn').addEventListener('click', function() {
+                        if (championHistory.length > 0) {
+                            const lastIdx = championHistory.pop();
+                            championCells[lastIdx].innerHTML = `<span class='champion-cell-empty'></span>`;
+                            championOrder = lastIdx;
+                        }
+                    });
+                    // user select 중복 방지
+                    selectIds.forEach(function(selId) {
+                        const sel = document.getElementsByName(selId)[0];
+                        if (!sel) return;
+                        sel.addEventListener('change', function() {
+                            const selectedUsers = selectIds.map(id => {
+                                const s = document.getElementsByName(id)[0];
+                                return s ? s.value : '';
+                            });
+                            if (selectedUsers.filter(v => v === this.value).length > 1 && this.value !== '') {
+                                alert('이미 선택된 유저입니다!');
+                                this.value = '';
+                            }
+                        });
+                    });
+                });
+            </script>
+            <div id="champion-list-wrap" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; max-height: 420px; overflow-y: auto; justify-content: center;">
+            {% for champ in champions %}
+                <div class="champion-item" data-champ-name="{{ champ.name }}" style="width: 60px; text-align: center; margin-bottom: 8px;">
+                    <img src="{% static 'img/' %}{{ champ.champ_id }}.png" alt="{{ champ.name }}" style="width:48px; height:48px; border-radius:8px; border:1px solid #444; background:#111;">
+                    <div style="font-size: 0.85em; margin-top: 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ champ.name }}</div>
+                </div>
+            {% endfor %}
+            </div>
+            <div style="text-align:center; margin: 12px 0 0 0;">
+                <button type="button" id="champ-undo-btn" style="background:#fffbe7; color:#222; border:1px solid #e0c800; border-radius:6px; padding:6px 22px; font-size:1em; font-weight:bold; cursor:pointer;">되돌리기</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th class="icon-cell"><i class="fa-solid fa-trophy"></i><br>(Result)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-mountain"></i><br>(Line)</th>
+                    <th><i class="fa-solid fa-user"></i><br>(User)</th>
+                    <th><i class="fa-solid fa-chess-knight"></i><br>(Champion)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-skull-crossbones"></i><br>(Kill)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-xmark"></i><br>(Death)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-handshake"></i><br>(Assist)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-leaf"></i><br>(CS)</th>
+                    <th class="icon-cell"><i class="fa-solid fa-fire"></i><br>(Damage)</th>
+                </tr>
+                {% for i in range %}
+                <tr>
+                    <td class="icon-cell">{% if i < 5 %}<i class="fa-solid fa-trophy" style="color:#1976d2;"></i>{% else %}<i class="fa-solid fa-flag" style="color:#c0392b;"></i>{% endif %}</td>
+                    <td class="icon-cell">
+                        {% if i|divisibleby:5 %}<i class="fa-solid fa-mountain" title="탑"></i>
+                        {% elif i|add:'-1'|divisibleby:5 %}<i class="fa-solid fa-tree" title="정글"></i>
+                        {% elif i|add:'-2'|divisibleby:5 %}<i class="fa-solid fa-crown" title="미드"></i>
+                        {% elif i|add:'-3'|divisibleby:5 %}<i class="fa-solid fa-crosshairs" title="원딜"></i>
+                        {% else %}<i class="fa-solid fa-hand-holding-heart" title="서폿"></i>{% endif %}
+                    </td>
+                    <td>
+                        <select name="user_{{i}}"> <option value="">선택</option>{% for user in users %}<option value="{{ user.lol_id }}">{{ user.name }}</option>{% endfor %}</select>
+                    </td>
+                    <td class="champion-cell"></td>
+                    <td class="icon-cell"><input type="number" name="kill_{{i}}" min="0" max="99" style="width:36px;"></td>
+                    <td class="icon-cell"><input type="number" name="death_{{i}}" min="0" max="99" style="width:36px;"></td>
+                    <td class="icon-cell"><input type="number" name="assist_{{i}}" min="0" max="99" style="width:36px;"></td>
+                    <td class="icon-cell"><input type="number" name="cs_{{i}}" min="0" max="999" style="width:44px;"></td>
+                    <td class="icon-cell"><input type="number" name="damage_{{i}}" min="0" max="999999" style="width:60px;"></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div style="text-align:center; margin-top:24px;">
+                <button type="submit" style="background:#1976d2; color:#fff; border:none; border-radius:6px; padding:10px 36px; font-size:1.1em; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #1976d233;">저장</button>
+            </div>
+        </div>
+    </div>
+    </form>
+</body>
+</html> 

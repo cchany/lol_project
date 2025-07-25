@@ -1,0 +1,92 @@
+{% load static %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+    <style>
+        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+        .center-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .btn { margin: 12px 0; padding: 12px 36px; font-size: 1.1em; border-radius: 8px; border: none; background: #23232b; color: #fff; cursor: pointer; }
+        .btn:hover { background: #23232b; }
+        .user-select { margin-bottom: 8px; padding: 6px 12px; font-size: 1em; border-radius: 6px; border: 1px solid #bdbdbd; }
+        .main-btn-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            margin-top: 90px;
+        }
+        .main-btn-row form { display: flex; flex-direction: column; align-items: center; }
+        .main-btn-row button, .main-btn-row a {
+            min-width: 180px;
+            padding: 16px 0;
+            font-size: 1.08em;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #1976d233;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-btn-row button:hover, .main-btn-row a:hover {
+            background: #222;
+        }
+        .user-select-wrap {
+            margin: 18px 0 0 0;
+            display: flex;
+            justify-content: center;
+        }
+        .user-select-wrap select {
+            padding: 8px 16px;
+            font-size: 1.08em;
+            border-radius: 6px;
+            border: 1px solid #bdbdbd;
+        }
+        .main-btn-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 90px;
+        }
+        .main-btn-col a, .main-btn-col button {
+            width: 240px;
+            padding: 20px 0;
+            font-size: 1.15em;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #1976d233;
+            cursor: pointer;
+            margin: 0;
+        }
+        .main-btn-col a:hover, .main-btn-col button:hover {
+            background: #222;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-btn-row">
+        <a href="/search/">전적검색</a>
+        <a href="/rank/">순위보기</a>
+        <a href="/upload/">경기결과입력</a>
+    </div>
+</body>
+</html>
