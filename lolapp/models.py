@@ -28,8 +28,6 @@ class GameData(models.Model):
     kill = models.IntegerField()
     death = models.IntegerField()
     assist = models.IntegerField()
-    cs = models.IntegerField()
-    damage = models.IntegerField()
     rank_score = models.FloatField(default=0)  # 추가: 랭크 점수
 
     def __str__(self):

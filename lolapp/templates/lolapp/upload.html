@@ -12,11 +12,11 @@
         body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; }
         .flex { display: flex; gap: 32px; justify-content: center; margin-top: 40px; }
         .champion-list { width: 290px; background: #222; color: #fff; border-radius: 8px; padding: 12px; min-height: 400px; }
-        .table-wrap { background: #fff; border-radius: 10px; padding: 18px; }
-        table { border-collapse: collapse; margin-top: 30px; }
+        .table-wrap { background: #fff; border-radius: 10px; padding: 18px; max-width: 800px; }
+        table { border-collapse: collapse; margin-top: 30px; min-width: 800px; }
         th, td { border: 1px solid #bdbdbd; padding: 4px 2px; text-align: center; }
         th { background: #23232b; color: #fff; font-size: 0.98em; }
-        .icon-cell { width: 38px; }
+        .icon-cell { /* width: 38px; */ }
         select { padding: 2px 4px; }
         .champion-cell-img {
             width: 32px;
@@ -79,7 +79,7 @@
                     ];
                     // 정글 라인 챔피언 이름 리스트
                     const jungleList = [
-                        "트런들","자르반 4세","볼리베어","마스터이","브라이어","워윅","카직스","판테온","비에고","에코","샤코","녹턴","리신","신짜오","벨베스","킨드레드","아이번","케인","다이애나","오공","피들스틱","잭스","니달리","탈론","이블린","그레이브즈","엘리스","누누와 윌럼프","우디르","제드","나피리","그웬","릴리아","자크","헤카림","렝가","아무무","렉사이","바이","자이라","뽀삐","카서스","문도 박사","그라가스","쉬바나","세주아니","탈리야","키아나","스카너"
+                        "트런들","자르반 4세","볼리베어","마스터이","브라이어","워윅","카직스","판테온","비에고","에코","샤코","녹턴","리 신","신짜오","벨베스","킨드레드","아이번","케인","다이애나","오공","피들스틱","잭스","니달리","탈론","이블린","그레이브즈","엘리스","누누와 윌럼프","우디르","제드","나피리","그웬","릴리아","자크","헤카림","렝가","아무무","렉사이","바이","자이라","뽀삐","카서스","문도 박사","그라가스","쉬바나","세주아니","탈리야","키아나","스카너"
                     ];
                     // 미드 라인 챔피언 이름 리스트
                     const midList = [
@@ -91,7 +91,7 @@
                     ];
                     // 서포터 라인 챔피언 이름 리스트
                     const supportList = [
-                        "룰루","나미","밀리오","쓰레쉬","브라움","소라카","잔나","바드","소나","렐","카르마","알리스타","질리언","레오나","블리츠크랭크","파이크","노틸러스","라칸","엘리스","모르가나","벨코즈","뽀삐","타릭","샤코","판테온","유미","럭스","세라핀","제라스","자이라","마오카이","세나","탐켄치","레나타 글라스크","니코","쉔","멜"
+                        "룰루","나미","밀리오","쓰레쉬","브라움","소라카","잔나","바드","소나","렐","카르마","알리스타","질리언","레오나","블리츠크랭크","파이크","노틸러스","라칸","엘리스","모르가나","벨코즈","뽀삐","타릭","샤코","판테온","유미","럭스","세라핀","제라스","자이라","마오카이","세나","탐 켄치","레나타 글라스크","니코","쉔","멜"
                     ];
                     btns.forEach(btn => {
                         btn.addEventListener('click', function() {
@@ -250,6 +250,82 @@
                             }
                         });
                     });
+
+                    // 결과 뒤집기 기능
+                    document.getElementById('flip-result-btn').addEventListener('click', function() {
+                        // 위팀(0-4)과 아래팀(5-9)의 데이터를 교환
+                        for (let i = 0; i < 5; i++) {
+                            const topIdx = i;
+                            const bottomIdx = i + 5;
+                            
+                            // user 데이터 교환
+                            const topUser = document.getElementsByName(`user_${topIdx}`)[0];
+                            const bottomUser = document.getElementsByName(`user_${bottomIdx}`)[0];
+                            const tempUser = topUser.value;
+                            topUser.value = bottomUser.value;
+                            bottomUser.value = tempUser;
+                            
+                            // 챔피언 데이터 교환
+                            const topChamp = document.querySelector(`input[name="champion_${topIdx}"]`);
+                            const bottomChamp = document.querySelector(`input[name="champion_${bottomIdx}"]`);
+                            const topChampCell = document.querySelector(`tr:nth-child(${topIdx + 2}) .champion-cell`);
+                            const bottomChampCell = document.querySelector(`tr:nth-child(${bottomIdx + 2}) .champion-cell`);
+                            
+                            if (topChamp && bottomChamp) {
+                                const tempChampName = topChamp.value;
+                                const tempChampImg = topChampCell.innerHTML;
+                                
+                                topChamp.value = bottomChamp.value;
+                                bottomChamp.value = tempChampName;
+                                
+                                topChampCell.innerHTML = bottomChampCell.innerHTML;
+                                bottomChampCell.innerHTML = tempChampImg;
+                            } else if (topChamp && !bottomChamp) {
+                                // 위팀에만 챔피언이 있는 경우
+                                bottomChampCell.innerHTML = topChampCell.innerHTML;
+                                const newBottomChamp = document.createElement('input');
+                                newBottomChamp.type = 'hidden';
+                                newBottomChamp.name = `champion_${bottomIdx}`;
+                                newBottomChamp.value = topChamp.value;
+                                bottomChampCell.appendChild(newBottomChamp);
+                                
+                                topChampCell.innerHTML = `<span class='champion-cell-empty'></span>`;
+                                topChamp.remove();
+                            } else if (!topChamp && bottomChamp) {
+                                // 아래팀에만 챔피언이 있는 경우
+                                topChampCell.innerHTML = bottomChampCell.innerHTML;
+                                const newTopChamp = document.createElement('input');
+                                newTopChamp.type = 'hidden';
+                                newTopChamp.name = `champion_${topIdx}`;
+                                newTopChamp.value = bottomChamp.value;
+                                topChampCell.appendChild(newTopChamp);
+                                
+                                bottomChampCell.innerHTML = `<span class='champion-cell-empty'></span>`;
+                                bottomChamp.remove();
+                            }
+                            
+                            // KDA 데이터 교환
+                            const topKill = document.getElementsByName(`kill_${topIdx}`)[0];
+                            const bottomKill = document.getElementsByName(`kill_${bottomIdx}`)[0];
+                            const tempKill = topKill.value;
+                            topKill.value = bottomKill.value;
+                            bottomKill.value = tempKill;
+                            
+                            const topDeath = document.getElementsByName(`death_${topIdx}`)[0];
+                            const bottomDeath = document.getElementsByName(`death_${bottomIdx}`)[0];
+                            const tempDeath = topDeath.value;
+                            topDeath.value = bottomDeath.value;
+                            bottomDeath.value = tempDeath;
+                            
+                            const topAssist = document.getElementsByName(`assist_${topIdx}`)[0];
+                            const bottomAssist = document.getElementsByName(`assist_${bottomIdx}`)[0];
+                            const tempAssist = topAssist.value;
+                            topAssist.value = bottomAssist.value;
+                            bottomAssist.value = tempAssist;
+                        }
+                        
+                        alert('결과가 뒤집어졌습니다!');
+                    });
                 });
             </script>
             <div id="champion-list-wrap" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; max-height: 420px; overflow-y: auto; justify-content: center;">
@@ -263,6 +339,9 @@
             <div style="text-align:center; margin: 12px 0 0 0;">
                 <button type="button" id="champ-undo-btn" style="background:#fffbe7; color:#222; border:1px solid #e0c800; border-radius:6px; padding:6px 22px; font-size:1em; font-weight:bold; cursor:pointer;">되돌리기</button>
             </div>
+            <div style="text-align:center; margin: 8px 0 0 0;">
+                <button type="button" id="flip-result-btn" style="background:#ff6b6b; color:#fff; border:1px solid #e74c3c; border-radius:6px; padding:6px 22px; font-size:1em; font-weight:bold; cursor:pointer;"><i class="fa-solid fa-arrows-up-down"></i> 결과 뒤집기</button>
+            </div>
         </div>
         <div class="table-wrap">
             <table>
@@ -274,8 +353,7 @@
                     <th class="icon-cell"><i class="fa-solid fa-skull-crossbones"></i><br>(Kill)</th>
                     <th class="icon-cell"><i class="fa-solid fa-xmark"></i><br>(Death)</th>
                     <th class="icon-cell"><i class="fa-solid fa-handshake"></i><br>(Assist)</th>
-                    <th class="icon-cell"><i class="fa-solid fa-leaf"></i><br>(CS)</th>
-                    <th class="icon-cell"><i class="fa-solid fa-fire"></i><br>(Damage)</th>
+
                 </tr>
                 {% for i in range %}
                 <tr>
@@ -294,8 +372,6 @@
                     <td class="icon-cell"><input type="number" name="kill_{{i}}" min="0" max="99" style="width:36px;"></td>
                     <td class="icon-cell"><input type="number" name="death_{{i}}" min="0" max="99" style="width:36px;"></td>
                     <td class="icon-cell"><input type="number" name="assist_{{i}}" min="0" max="99" style="width:36px;"></td>
-                    <td class="icon-cell"><input type="number" name="cs_{{i}}" min="0" max="999" style="width:44px;"></td>
-                    <td class="icon-cell"><input type="number" name="damage_{{i}}" min="0" max="999999" style="width:60px;"></td>
                 </tr>
                 {% endfor %}
             </table>

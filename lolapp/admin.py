@@ -13,7 +13,7 @@ class GameAdmin(admin.ModelAdmin):
 class GameDataAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'game', 'user', 'result', 'champion', 'line',
-        'kill', 'death', 'assist', 'cs', 'damage', 'rank_score'
+        'kill', 'death', 'assist', 'rank_score'
     ]
     ordering = ['id']
     list_filter = ['result', 'line', 'champion']

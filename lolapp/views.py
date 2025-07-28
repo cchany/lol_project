@@ -7,8 +7,31 @@ from django.db.models import Count, Sum, Avg, Q, F
 # OCR, 이미지, crop, 세션 관련 코드 모두 삭제
 
 def main(request):
-    users = User.objects.all()
-    return render(request, 'lolapp/main.html', {'users': users})
+    # 유저 순위표 생성 (rank 함수와 동일)
+    user_stats = []
+    for user in User.objects.all():
+        qs = GameData.objects.filter(user=user)
+        total = qs.count()
+        win = qs.filter(result='win').count()
+        winrate = int((win / total) * 100) if total else 0
+        k_sum = qs.aggregate(k=Sum('kill'))['k'] or 0
+        d_sum = qs.aggregate(d=Sum('death'))['d'] or 0
+        a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
+        kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
+        score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
+        avg_score = round(score / total, 2) if total else 0
+        user_stats.append({
+            'name': user.name,
+            'total': total,
+            'win': win,
+            'winrate': winrate,
+            'kda': kda,
+            'score': score,
+            'avg_score': avg_score,
+        })
+    user_stats = sorted(user_stats, key=lambda x: -x['avg_score'])
+    real_user_stats = [u for u in user_stats if u['total'] > 0]
+    return render(request, 'lolapp/main.html', {'real_user_stats': real_user_stats})
 
 def search(request):
     query = request.GET.get('name', '')
@@ -31,7 +54,6 @@ def search(request):
                     kill=Sum('kill'),
                     death=Sum('death'),
                     assist=Sum('assist'),
-                    cs=Avg('cs'),
                 )
             )
             # KDA 계산 및 승률
@@ -50,7 +72,6 @@ def search(request):
                     'kill': c['kill'],
                     'death': c['death'],
                     'assist': c['assist'],
-                    'cs': round(c['cs'], 1) if c['cs'] else 0,
                     'kda': kda,
                     'winrate': winrate,
                     'champion_img': champion_img,
@@ -66,6 +87,10 @@ def search(request):
             a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
             kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
             rank_score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
+            avg_rank_score = round(rank_score / total, 2) if total else 0
+            kill_avg = round(k_sum / total, 1) if total else 0
+            death_avg = round(d_sum / total, 1) if total else 0
+            assist_avg = round(a_sum / total, 1) if total else 0
             stats = {
                 'total': total,
                 'win': win,
@@ -74,7 +99,10 @@ def search(request):
                 'death': d_sum,
                 'assist': a_sum,
                 'kda': kda,
-                'rank_score': rank_score,
+                'rank_score': avg_rank_score,
+                'kill_avg': kill_avg,
+                'death_avg': death_avg,
+                'assist_avg': assist_avg,
             }
             # 도넛차트용 승/패 비율
             win_percent = int((win / total) * 100) if total else 0
@@ -114,8 +142,6 @@ def search(request):
                     'kill': gd.kill,
                     'death': gd.death,
                     'assist': gd.assist,
-                    'cs': gd.cs,
-                    'damage': gd.damage,
                     'result': gd.result,
                     'opponent': opponent_name,
                     'kda': round((gd.kill + gd.assist) / gd.death, 2) if gd.death else gd.kill + gd.assist,
@@ -182,10 +208,8 @@ def rank(request):
         d_sum = qs.aggregate(d=Sum('death'))['d'] or 0
         a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
         kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
-        cs_avg = round(qs.aggregate(cs=Avg('cs'))['cs'] or 0, 1)
-        dmg_avg = round(qs.aggregate(dmg=Avg('damage'))['dmg'] or 0)
-        rank_score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
-        avg_rank_score = round(rank_score / total, 2) if total else 0
+        score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
+        avg_score = round(score / total, 2) if total else 0
         user_stats.append({
             'name': user.name,
             'total': total,
@@ -193,12 +217,10 @@ def rank(request):
             'lose': lose,
             'winrate': winrate,
             'kda': kda,
-            'cs_avg': cs_avg,
-            'dmg_avg': dmg_avg,
-            'rank_score': rank_score,
-            'avg_rank_score': avg_rank_score,
+            'score': score,
+            'avg_score': avg_score,
         })
-    user_stats = sorted(user_stats, key=lambda x: -x['avg_rank_score'])
+    user_stats = sorted(user_stats, key=lambda x: -x['avg_score'])
     real_user_stats = [u for u in user_stats if u['total'] > 0]
 
     # 2. 챔피언별 승률 (라인별)
@@ -247,9 +269,7 @@ def rank(request):
             d_sum = qs.aggregate(d=Sum('death'))['d'] or 0
             a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
             kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2)
-            cs_avg = round(qs.aggregate(cs=Avg('cs'))['cs'] or 0, 1)
-            dmg_avg = round(qs.aggregate(dmg=Avg('damage'))['dmg'] or 0)
-            rank_score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
+            score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
             line_user_stats.append({
                 'name': user.name,
                 'line': line,
@@ -258,11 +278,9 @@ def rank(request):
                 'lose': lose,
                 'winrate': winrate,
                 'kda': kda,
-                'cs_avg': cs_avg,
-                'dmg_avg': dmg_avg,
-                'rank_score': rank_score,
+                'score': score,
             })
-    line_user_stats = sorted(line_user_stats, key=lambda x: -x['rank_score'])
+    line_user_stats = sorted(line_user_stats, key=lambda x: -x['score'])
 
     # 4. user별 상대전적 (라인별, 승리/패배 유저, 이름/승률/KDA/판수/승/패)
     vs_stats = {l: [] for l in ['top', 'jungle', 'mid', 'adc', 'support']}
@@ -343,15 +361,35 @@ def rank(request):
     }
     return render(request, 'lolapp/rank.html', context)
 
-def calc_rank_score(kill, assist, death, damage, cs, line, result):
-    if line == 'support' or line == '서폿':
-        base = (kill * 2) + (assist * 2.5) - (death * 1.5) + (damage / 1200)
-    else:
-        base = (kill * 3) + (assist * 1.5) - (death * 2) + (damage / 1000) + (cs / 10)
-    if result == 'win' or result == '승리':
-        return base + 10
-    else:
-        return base
+def calc_rank_score(kill, assist, death, kp):
+    # KDA 계산 (데스가 0이면 1로 간주)
+    kda = (kill + assist) / (death if death != 0 else 1)
+    return (kill * 2) + (assist * 1.5) - (death * 3) + (kp * 40) + (kda * 3)
+
+def calculate_score_changes(game_data_list):
+    """게임 데이터를 받아서 각 플레이어의 점수 변화를 계산"""
+    # 승리팀과 패배팀 분리
+    win_team = [(i, data) for i, data in enumerate(game_data_list) if data['result'] == 'win']
+    lose_team = [(i, data) for i, data in enumerate(game_data_list) if data['result'] == 'lose']
+    
+    # 각 팀 내에서 rank_score 기준으로 정렬
+    win_team.sort(key=lambda x: x[1]['rank_score'], reverse=True)
+    lose_team.sort(key=lambda x: x[1]['rank_score'], reverse=True)
+    
+    # 점수 변화 계산
+    score_changes = {}
+    
+    # 승리팀 점수 변화: +15, +8, +6, +4, +2
+    win_points = [15, 8, 6, 4, 2]
+    for i, (player_idx, _) in enumerate(win_team):
+        score_changes[player_idx] = win_points[i] if i < len(win_points) else 0
+    
+    # 패배팀 점수 변화: -2, -4, -6, -8, -10
+    lose_points = [-2, -4, -6, -8, -10]
+    for i, (player_idx, _) in enumerate(lose_team):
+        score_changes[player_idx] = lose_points[i] if i < len(lose_points) else 0
+    
+    return score_changes
 
 def upload(request):
     champions = Champion.objects.all()
@@ -365,32 +403,68 @@ def upload(request):
         # 라인 순서
         lines = ['top', 'jungle', 'mid', 'adc', 'support'] * 2
         results = ['win'] * 5 + ['lose'] * 5
+        # 먼저 모든 킬 데이터를 수집하여 팀별 총 킬 계산
+        team_kills = {'win': 0, 'lose': 0}
+        for i in range(10):
+            kill = int(request.POST.get(f'kill_{i}') or 0)
+            result = results[i]
+            team_kills[result] += kill
+        
+        # 모든 플레이어의 데이터를 수집
+        game_data_list = []
+        for i in range(10):
+            user_id = request.POST.get(f'user_{i}')
+            champion = request.POST.get(f'champion_{i}')
+            kill = int(request.POST.get(f'kill_{i}') or 0)
+            death = int(request.POST.get(f'death_{i}') or 0)
+            assist = int(request.POST.get(f'assist_{i}') or 0)
+            if not (user_id and champion):
+                continue  # 필수값 없으면 저장 안함
+            line = lines[i]
+            result = results[i]
+            
+            # KP(킬 관여율) 계산: (킬 + 어시) / 팀 전체 킬
+            team_total_kill = team_kills[result]
+            kp = (kill + assist) / team_total_kill if team_total_kill > 0 else 0
+            
+            rank_score = calc_rank_score(kill, assist, death, kp)
+            game_data_list.append({
+                'user_id': user_id,
+                'champion': champion,
+                'line': line,
+                'result': result,
+                'kill': kill,
+                'death': death,
+                'assist': assist,
+                'rank_score': rank_score
+            })
+        
+        # 점수 변화 계산
+        score_changes = calculate_score_changes(game_data_list)
+        
         with transaction.atomic():
-            for i in range(10):
-                user_id = request.POST.get(f'user_{i}')
-                champion = request.POST.get(f'champion_{i}')
-                kill = int(request.POST.get(f'kill_{i}') or 0)
-                death = int(request.POST.get(f'death_{i}') or 0)
-                assist = int(request.POST.get(f'assist_{i}') or 0)
-                cs = int(request.POST.get(f'cs_{i}') or 0)
-                damage = int(request.POST.get(f'damage_{i}') or 0)
-                if not (user_id and champion):
-                    continue  # 필수값 없으면 저장 안함
-                line = lines[i]
-                result = results[i]
-                rank_score = calc_rank_score(kill, assist, death, damage, cs, line, result)
+            for i, data in enumerate(game_data_list):
+                # 현재 유저의 기존 점수 조회 (기본값 100)
+                try:
+                    user = User.objects.get(lol_id=data['user_id'])
+                    current_score = GameData.objects.filter(user=user).order_by('-game__id').first()
+                    current_score = current_score.rank_score if current_score else 100
+                except User.DoesNotExist:
+                    current_score = 100
+                
+                # 새로운 점수 계산
+                new_score = current_score + score_changes.get(i, 0)
+                
                 GameData.objects.create(
                     game=game,
-                    user_id=user_id,
-                    result=result,
-                    champion=champion,
-                    line=line,
-                    kill=kill,
-                    death=death,
-                    assist=assist,
-                    cs=cs,
-                    damage=damage,
-                    rank_score=rank_score
+                    user_id=data['user_id'],
+                    result=data['result'],
+                    champion=data['champion'],
+                    line=data['line'],
+                    kill=data['kill'],
+                    death=data['death'],
+                    assist=data['assist'],
+                    rank_score=new_score
                 )
         return render(request, 'lolapp/upload.html', {**context, 'success': True})
     return render(request, 'lolapp/upload.html', context)

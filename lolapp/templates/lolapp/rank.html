@@ -62,10 +62,17 @@
         </div>
         <!-- 1. 순위표 -->
         <div class="tab-content active">
-            <div class="section-title">유저 순위표</div>
-            <table>
-                <tr>
-                    <th>순위</th><th>유저</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA평균</th><th>CS평균</th><th>데미지평균</th><th>평균Rank점수</th>
+            <div class="section-title">USER SCORE BOARD</div>
+            <table style="margin:0 auto; min-width:700px; background:#222; color:#fff; border-radius:10px; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
+                <tr style="background:#23232b;">
+                    <th style="padding:12px 18px; text-align:center;">RANK</th>
+                    <th style="padding:12px 18px; text-align:center;">USER</th>
+                    <th style="padding:12px 18px; text-align:center;">GAME</th>
+                    <th style="padding:12px 18px; text-align:center;">WIN</th>
+                    <th style="padding:12px 18px; text-align:center;">LOSE</th>
+                    <th style="padding:12px 18px; text-align:center;">WIN RATE</th>
+                    <th style="padding:12px 18px; text-align:center;">KDA</th>
+                    <th style="padding:12px 18px; text-align:center;">SCORE</th>
                 </tr>
                 {% for user in real_user_stats %}
                     <tr
@@ -77,7 +84,7 @@
                         style="background:#cd7f32; font-weight:bold; color:#000;"
                       {% endif %}
                     >
-                      <td style="text-align:left; width:auto;">
+                      <td style="text-align:center; padding:10px 0; min-width:48px;">
                         <span style="display:inline-block; min-width:48px;">
                           {{ forloop.counter }}
                           {% if forloop.counter == 1 %} <span style="margin-left:2px;">🥇</span>
@@ -87,18 +94,18 @@
                           {% endif %}
                         </span>
                       </td>
-                      <td>{{ user.name }}</td>
-                      <td>{{ user.total }}</td>
-                      <td>{{ user.win }}</td>
-                      <td>{{ user.lose }}</td>
-                      <td>{{ user.winrate }}%</td>
-                      <td>{{ user.kda }}</td>
-                      <td>{{ user.cs_avg }}</td>
-                      <td>{{ user.dmg_avg }}</td>
-                      <td>{{ user.avg_rank_score }}</td>
+                      <td style="text-align:center; padding:10px 0;">
+                        <a href="/search/?name={{ user.name }}" style="color:inherit; text-decoration:underline;">{{ user.name }}</a>
+                      </td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.total }}</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.win }}</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.lose }}</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.avg_score }}</td>
                     </tr>
                 {% empty %}
-                <tr><td colspan="10">데이터가 없습니다.</td></tr>
+                <tr><td colspan="8" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
                 {% endfor %}
             </table>
         </div>
@@ -115,7 +122,7 @@
             </div>
             <table>
                 <tr>
-                    <th>챔피언</th><th>라인</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA</th>
+                    <th>CHAMPION</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th>
                 </tr>
                 {% for champ in champ_stats %}
                 <tr class="line-row" data-line="{{ champ.line }}">
@@ -145,7 +152,7 @@
             </div>
             <table>
                 <tr>
-                    <th>순위</th><th>유저</th><th>라인</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>KDA평균</th><th>CS평균</th><th>데미지평균</th><th>Rank점수</th>
+                    <th>RANK</th><th>USER</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th><th>SCORE</th>
                 </tr>
                 {% for user in line_user_stats %}
                 <tr class="line-row" data-line="{{ user.line }}">
@@ -157,12 +164,10 @@
                     <td>{{ user.lose }}</td>
                     <td>{{ user.winrate }}%</td>
                     <td>{{ user.kda }}</td>
-                    <td>{{ user.cs_avg }}</td>
-                    <td>{{ user.dmg_avg }}</td>
-                    <td>{{ user.rank_score }}</td>
+                    <td>{{ user.score }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="11">데이터가 없습니다.</td></tr>
+                <tr><td colspan="9">데이터가 없습니다.</td></tr>
                 {% endfor %}
             </table>
         </div>

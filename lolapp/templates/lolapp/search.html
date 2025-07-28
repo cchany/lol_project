@@ -73,10 +73,10 @@
                 </div>
                 <div style="font-size:1.1em; margin-bottom:2px;">{{ stats.total }}전 {{ stats.win }}승 {{ stats.lose }}패</div>
                 <div style="font-size:1.3em; font-weight:bold; margin-bottom:2px;">
-                    <span style="color:#e0e0e0;">{{ stats.kill|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span> /
-                    <span style="color:#ef5350;">{{ stats.death|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span> /
-                    <span style="color:#81c784;">{{ stats.assist|divisibleby:stats.total|floatformat:1|default_if_none:'0' }}</span>
-                    <span style="font-size:1.5em; color:#fff; margin-left:8px;">{{ stats.kda }}:1</span>
+                    <span style="color:#e0e0e0;">{{ stats.kill_avg }}</span> /
+                    <span style="color:#ef5350;">{{ stats.death_avg }}</span> /
+                    <span style="color:#81c784;">{{ stats.assist_avg }}</span>
+                    <span style="font-size:1.5em; color:#fff; margin-left:8px;">{{ stats.kda }}</span>
                 </div>
                 <div style="color:#ffd600; font-size:1em;">Rank {{ stats.rank_score }}</div>
             </div>
@@ -141,9 +141,11 @@
                             <img src="{% static 'img/' %}{{ game.champion_img }}.png">
                             <span>{{ game.champion }}</span>
                         </div>
-                        <div class="game-info">
-                            <div class="game-kda"><span>{{ game.kill }}</span> / <span class="death">{{ game.death }}</span> / <span>{{ game.assist }}</span> <span class="score">{{ game.kda }}:1 평점</span></div>
-                            <div class="game-detail">CS {{ game.cs }} | 딜량 {{ game.damage }}</div>
+                        <div class="game-info" style="text-align:center;">
+                            <div class="game-kda" style="justify-content:center; display:flex; align-items:center; gap:4px; font-size:1.1em; font-weight:bold;">
+                                <span>{{ game.kill }}</span> / <span class="death">{{ game.death }}</span> / <span>{{ game.assist }}</span> <span class="score">{{ game.kda }} 평점</span>
+                            </div>
+
                         </div>
                         <div class="game-vs">상대: {{ game.opponent }}</div>
                     </div>

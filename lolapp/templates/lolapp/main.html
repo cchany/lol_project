@@ -88,5 +88,25 @@
         <a href="/rank/">순위보기</a>
         <a href="/upload/">경기결과입력</a>
     </div>
+    <div style="display:flex; justify-content:center; margin-top:40px;">
+        <table style="background:#222; color:#fff; border-radius:10px; padding:12px; min-width:380px; font-size:1.08em; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
+            <tr style="background:#23232b;">
+                <th style="padding:12px 24px; text-align:center;">유저이름</th>
+                <th style="padding:12px 24px; text-align:center;">승률</th>
+                <th style="padding:12px 24px; text-align:center;">SCORE</th>
+            </tr>
+            {% for user in real_user_stats|slice:":5" %}
+            <tr>
+                <td style="padding:10px 24px; text-align:center;">
+                    <a href="/search/?name={{ user.name }}" style="color:#fff; text-decoration:underline;">{{ user.name }}</a>
+                </td>
+                <td style="padding:10px 24px; text-align:center;">{{ user.winrate }}%</td>
+                <td style="padding:10px 24px; text-align:center;">{{ user.score }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="padding:12px 0; color:#bbb; text-align:center;">데이터 없음</td></tr>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 </html>
