@@ -3,27 +3,44 @@ from .models import User, Champion, GameData, Game
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Count, Sum, Avg, Q, F
+from django.http import HttpRequest
+from collections import defaultdict
 
 # OCR, 이미지, crop, 세션 관련 코드 모두 삭제
 
-def main(request):
-    # 유저 순위표 생성 (rank 함수와 동일)
+# 유저 순위표 계산 함수 (rank, main에서 공통 사용)
+def get_rank_user_stats():
+    # GameData를 user별로 group by하여 집계
     user_stats = []
-    for user in User.objects.all():
-        qs = GameData.objects.filter(user=user)
-        total = qs.count()
-        win = qs.filter(result='win').count()
+    # user별 집계 쿼리
+    stats = (
+        GameData.objects.values('user', 'user__name')
+        .annotate(
+            total=Count('id'),
+            win=Count('id', filter=Q(result='win')),
+            lose=Count('id', filter=Q(result='lose')),
+            k_sum=Sum('kill'),
+            d_sum=Sum('death'),
+            a_sum=Sum('assist'),
+            score=Sum('rank_score'),
+        )
+    )
+    for s in stats:
+        total = s['total']
+        win = s['win']
+        lose = s['lose']
         winrate = int((win / total) * 100) if total else 0
-        k_sum = qs.aggregate(k=Sum('kill'))['k'] or 0
-        d_sum = qs.aggregate(d=Sum('death'))['d'] or 0
-        a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
+        k_sum = s['k_sum'] or 0
+        d_sum = s['d_sum'] or 0
+        a_sum = s['a_sum'] or 0
         kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
-        score = round(qs.aggregate(score=Sum('rank_score'))['score'] or 0, 2)
+        score = round(s['score'] or 0, 2)
         avg_score = round(score / total, 2) if total else 0
         user_stats.append({
-            'name': user.name,
+            'name': s['user__name'],
             'total': total,
             'win': win,
+            'lose': lose,
             'winrate': winrate,
             'kda': kda,
             'score': score,
@@ -31,7 +48,43 @@ def main(request):
         })
     user_stats = sorted(user_stats, key=lambda x: -x['avg_score'])
     real_user_stats = [u for u in user_stats if u['total'] > 0]
-    return render(request, 'lolapp/main.html', {'real_user_stats': real_user_stats})
+    return real_user_stats
+
+def main(request):
+    real_user_stats = get_rank_user_stats()[:5]
+    # 챔피언 한글명 → 영문 champ_id 매핑
+    champion_name_map = {c.name: c.champ_id for c in Champion.objects.all()}
+    # 최근 3경기 데이터
+    recent_games = Game.objects.order_by('-id')[:3]
+    recent_games_rows = []
+    for game in recent_games:
+        game_gamedata = GameData.objects.filter(game=game).select_related('user')
+        team_kills = {'win': 0, 'lose': 0}
+        for row in game_gamedata:
+            team_kills[row.result] += row.kill
+        rows = []
+        for row in game_gamedata:
+            kda = (row.kill + row.assist) / (row.death if row.death != 0 else 1)
+            kp = (row.kill + row.assist) / team_kills[row.result] if team_kills[row.result] > 0 else 0
+            performance_score = calc_rank_score(row.kill, row.assist, row.death, kp)
+            rows.append({
+                'result': row.result,
+                'user': row.user,
+                'line': row.line,
+                'champion': row.champion,
+                'champion_img': champion_name_map.get(row.champion, ''),
+                'kill': row.kill,
+                'death': row.death,
+                'assist': row.assist,
+                'kda': round(kda, 2),
+                'kp': round(kp * 100, 1),
+                'rank_score': round(performance_score, 2),
+            })
+        recent_games_rows.append({'date': game.date, 'rows': rows})
+    return render(request, 'lolapp/main.html', {
+        'real_user_stats': real_user_stats,
+        'recent_games_rows': recent_games_rows,
+    })
 
 def search(request):
     query = request.GET.get('name', '')
@@ -196,6 +249,7 @@ def search(request):
     return render(request, 'lolapp/search.html', context)
 
 def rank(request):
+    real_user_stats = get_rank_user_stats()
     # 1. 유저 순위표
     user_stats = []
     for user in User.objects.all():
@@ -396,21 +450,31 @@ def upload(request):
     users = User.objects.all()
     context = {'champions': champions, 'users': users, 'range': range(10)}
     if request.method == 'POST':
-        # 새로운 Game 생성 (날짜+시간 기반 unique_key)
         now = timezone.now()
         unique_key = now.strftime('%Y%m%d%H%M%S')
         game = Game.objects.create(date=now.strftime('%m-%d'), unique_key=unique_key)
-        # 라인 순서
         lines = ['top', 'jungle', 'mid', 'adc', 'support'] * 2
         results = ['win'] * 5 + ['lose'] * 5
-        # 먼저 모든 킬 데이터를 수집하여 팀별 총 킬 계산
         team_kills = {'win': 0, 'lose': 0}
+        user_ids = []
         for i in range(10):
+            user_id = request.POST.get(f'user_{i}')
+            if user_id:
+                user_ids.append(user_id)
             kill = int(request.POST.get(f'kill_{i}') or 0)
             result = results[i]
             team_kills[result] += kill
-        
-        # 모든 플레이어의 데이터를 수집
+        # 미리 모든 User, 최신 GameData를 dict로 가져오기
+        user_objs = {u.lol_id: u for u in User.objects.filter(lol_id__in=user_ids)}
+        last_gamedata = GameData.objects.filter(user_id__in=user_ids).order_by('user_id', '-game__id')
+        user_last_score = {}
+        for gd in last_gamedata:
+            if gd.user_id not in user_last_score:
+                user_last_score[gd.user_id] = gd.rank_score
+        # 없는 유저는 100점
+        for uid in user_ids:
+            if uid not in user_last_score:
+                user_last_score[uid] = 100
         game_data_list = []
         for i in range(10):
             user_id = request.POST.get(f'user_{i}')
@@ -419,14 +483,11 @@ def upload(request):
             death = int(request.POST.get(f'death_{i}') or 0)
             assist = int(request.POST.get(f'assist_{i}') or 0)
             if not (user_id and champion):
-                continue  # 필수값 없으면 저장 안함
+                continue
             line = lines[i]
             result = results[i]
-            
-            # KP(킬 관여율) 계산: (킬 + 어시) / 팀 전체 킬
             team_total_kill = team_kills[result]
             kp = (kill + assist) / team_total_kill if team_total_kill > 0 else 0
-            
             rank_score = calc_rank_score(kill, assist, death, kp)
             game_data_list.append({
                 'user_id': user_id,
@@ -438,23 +499,11 @@ def upload(request):
                 'assist': assist,
                 'rank_score': rank_score
             })
-        
-        # 점수 변화 계산
         score_changes = calculate_score_changes(game_data_list)
-        
         with transaction.atomic():
             for i, data in enumerate(game_data_list):
-                # 현재 유저의 기존 점수 조회 (기본값 100)
-                try:
-                    user = User.objects.get(lol_id=data['user_id'])
-                    current_score = GameData.objects.filter(user=user).order_by('-game__id').first()
-                    current_score = current_score.rank_score if current_score else 100
-                except User.DoesNotExist:
-                    current_score = 100
-                
-                # 새로운 점수 계산
+                current_score = user_last_score.get(data['user_id'], 100)
                 new_score = current_score + score_changes.get(i, 0)
-                
                 GameData.objects.create(
                     game=game,
                     user_id=data['user_id'],

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+    <style>
+        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+        .center-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .btn { margin: 12px 0; padding: 12px 36px; font-size: 1.1em; border-radius: 8px; border: none; background: #23232b; color: #fff; cursor: pointer; }
+        .btn:hover { background: #23232b; }
+        .user-select { margin-bottom: 8px; padding: 6px 12px; font-size: 1em; border-radius: 6px; border: 1px solid #bdbdbd; }
+        .main-btn-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            margin-top: 90px;
+        }
+        .main-btn-row form { display: flex; flex-direction: column; align-items: center; }
+        .main-btn-row button, .main-btn-row a {
+            min-width: 180px;
+            padding: 16px 0;
+            font-size: 1.08em;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #1976d233;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-btn-row button:hover, .main-btn-row a:hover {
+            background: #222;
+        }
+        .user-select-wrap {
+            margin: 18px 0 0 0;
+            display: flex;
+            justify-content: center;
+        }
+        .user-select-wrap select {
+            padding: 8px 16px;
+            font-size: 1.08em;
+            border-radius: 6px;
+            border: 1px solid #bdbdbd;
+        }
+        .main-btn-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 90px;
+        }
+        .main-btn-col a, .main-btn-col button {
+            width: 240px;
+            padding: 20px 0;
+            font-size: 1.15em;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #1976d233;
+            cursor: pointer;
+            margin: 0;
+        }
+        .main-btn-col a:hover, .main-btn-col button:hover {
+            background: #222;
+        }
+        table th, table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .icon-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/header.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">
+            <a href="/">
+                <img src="/static/img/logo.png" alt="사이트 로고">
+            </a>
+            <span style="color:#fff; font-size:1.25em; font-weight:bold; letter-spacing:1px;">ACE Stat's</span>
+        </div>
+    </header>
+    <div class="main-btn-row">
+        <a href="/search/">전적검색</a>
+        <a href="/rank/">순위보기</a>
+        <a href="/upload/">경기결과입력</a>
+    </div>
+
+    <!-- 3경기 (최신) -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-top:40px;">
+        <div style="color:#fff; font-size:1.15em; font-weight:bold; margin-bottom:10px; letter-spacing:1px;">
+            2025-07-27 3경기
+        </div>
+        <table style="min-width:900px; background:#282838; color:#fff; border-radius:12px; overflow:hidden; border-collapse:separate; border-spacing:0; font-size:1em; box-shadow:0 2px 12px #0002;">
+            <tbody>
+                <tr>
+                    <th class="icon-cell"><i class="fa-solid fa-trophy"></i><br>결과</th>
+                    <th class="icon-cell"><i class="fa-solid fa-mountain"></i><br>라인</th>
+                    <th><i class="fa-solid fa-user"></i><br>유저</th>
+                    <th><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
+                    <th class="icon-cell"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
+                    <th class="icon-cell"><i class="fa-solid fa-xmark"></i><br>데스</th>
+                    <th class="icon-cell"><i class="fa-solid fa-handshake"></i><br>어시스트</th>
+                    <th class="icon-cell"><i class="fa-solid fa-fire"></i><br>딜량</th>
+                </tr>
+                <!-- 승리팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>유승현</td>
+                    <td>오른</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">13</td>
+                    <td class="icon-cell">24606</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>송찬영</td>
+                    <td>리신</td>
+                    <td class="icon-cell">18</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">32910</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>이상수</td>
+                    <td>애니</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">28314</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>강한솔</td>
+                    <td>시비르</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">14</td>
+                    <td class="icon-cell">42857</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>김동연</td>
+                    <td>레나타 글라스크</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">18</td>
+                    <td class="icon-cell">11401</td>
+                </tr>
+                <!-- 패배팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>김명준</td>
+                    <td>럼블</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">23529</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>여우빈</td>
+                    <td>제드</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">19034</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>김현욱</td>
+                    <td>라이즈</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">24041</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>김항래</td>
+                    <td>진</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">28672</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>최지수</td>
+                    <td>블리츠크랭크</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">9</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">8382</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 2경기 -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-top:40px;">
+        <div style="color:#fff; font-size:1.15em; font-weight:bold; margin-bottom:10px; letter-spacing:1px;">
+            2025-07-27 2경기
+        </div>
+        <table style="min-width:900px; background:#28303a; color:#fff; border-radius:12px; overflow:hidden; border-collapse:separate; border-spacing:0; font-size:1em; box-shadow:0 2px 12px #0002;">
+            <tbody>
+                <tr>
+                    <th class="icon-cell"><i class="fa-solid fa-trophy"></i><br>결과</th>
+                    <th class="icon-cell"><i class="fa-solid fa-mountain"></i><br>라인</th>
+                    <th><i class="fa-solid fa-user"></i><br>유저</th>
+                    <th><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
+                    <th class="icon-cell"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
+                    <th class="icon-cell"><i class="fa-solid fa-xmark"></i><br>데스</th>
+                    <th class="icon-cell"><i class="fa-solid fa-handshake"></i><br>어시스트</th>
+                    <th class="icon-cell"><i class="fa-solid fa-fire"></i><br>딜량</th>
+                </tr>
+                <!-- 승리팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>김명준</td>
+                    <td>트런들</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">9800</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>여우빈</td>
+                    <td>브라이어</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">11200</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>김현욱</td>
+                    <td>빅토르</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">13400</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>김항래</td>
+                    <td>애쉬</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">15</td>
+                    <td class="icon-cell">21164</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>최지수</td>
+                    <td>쓰레쉬</td>
+                    <td class="icon-cell">1</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">18</td>
+                    <td class="icon-cell">6425</td>
+                </tr>
+                <!-- 패배팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>유승현</td>
+                    <td>워윅</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">9</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">12194</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>송찬영</td>
+                    <td>람머스</td>
+                    <td class="icon-cell">1</td>
+                    <td class="icon-cell">9</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">8000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>이상수</td>
+                    <td>오리아나</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">9000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>강한솔</td>
+                    <td>케이틀린</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">9500</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>김동연</td>
+                    <td>쓰레쉬</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">5100</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 1경기 (가장 오래된) -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-top:40px;">
+        <div style="color:#fff; font-size:1.15em; font-weight:bold; margin-bottom:10px; letter-spacing:1px;">
+            2025-07-27 1경기
+        </div>
+        <table style="min-width:900px; background:#282838; color:#fff; border-radius:12px; overflow:hidden; border-collapse:separate; border-spacing:0; font-size:1em; box-shadow:0 2px 12px #0002;">
+            <tbody>
+                <tr>
+                    <th class="icon-cell"><i class="fa-solid fa-trophy"></i><br>결과</th>
+                    <th class="icon-cell"><i class="fa-solid fa-mountain"></i><br>라인</th>
+                    <th><i class="fa-solid fa-user"></i><br>유저</th>
+                    <th><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
+                    <th class="icon-cell"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
+                    <th class="icon-cell"><i class="fa-solid fa-xmark"></i><br>데스</th>
+                    <th class="icon-cell"><i class="fa-solid fa-handshake"></i><br>어시스트</th>
+                    <th class="icon-cell"><i class="fa-solid fa-fire"></i><br>딜량</th>
+                </tr>
+                <!-- 승리팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>유승현</td>
+                    <td>볼리베어</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">17590</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>송찬영</td>
+                    <td>오공</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">12000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>이상수</td>
+                    <td>흐웨이</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">10</td>
+                    <td class="icon-cell">17000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>강한솔</td>
+                    <td>징크스</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">3</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">16000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-trophy" style="color:#1976d2;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>김동연</td>
+                    <td>라칸</td>
+                    <td class="icon-cell">1</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">15</td>
+                    <td class="icon-cell">5000</td>
+                </tr>
+                <!-- 패배팀 -->
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-mountain" title="탑"></i></td>
+                    <td>김명준</td>
+                    <td>갱플랭크</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">11000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-tree" title="정글"></i></td>
+                    <td>여우빈</td>
+                    <td>에코</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">10500</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crown" title="미드"></i></td>
+                    <td>김현욱</td>
+                    <td>크산테</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">2</td>
+                    <td class="icon-cell">7</td>
+                    <td class="icon-cell">18000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-crosshairs" title="원딜"></i></td>
+                    <td>김항래</td>
+                    <td>스몰더</td>
+                    <td class="icon-cell">5</td>
+                    <td class="icon-cell">4</td>
+                    <td class="icon-cell">8</td>
+                    <td class="icon-cell">15000</td>
+                </tr>
+                <tr>
+                    <td class="icon-cell"><i class="fa-solid fa-flag" style="color:#c0392b;"></i></td>
+                    <td class="icon-cell"><i class="fa-solid fa-hand-holding-heart" title="서폿"></i></td>
+                    <td>최지수</td>
+                    <td>바드</td>
+                    <td class="icon-cell">0</td>
+                    <td class="icon-cell">6</td>
+                    <td class="icon-cell">12</td>
+                    <td class="icon-cell">6000</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -6,6 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Main Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
         body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
         .center-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
@@ -80,6 +82,130 @@
         .main-btn-col a:hover, .main-btn-col button:hover {
             background: #222;
         }
+        /* 최근 경기 결과 테이블 스타일 */
+        .recent-table-wrap {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .recent-table {
+            background: #23232b;
+            color: #23232b;
+            border-radius: 14px;
+            min-width: 700px;
+            font-size: 0.98em;
+            box-shadow: 0 2px 16px #0002;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .recent-table th {
+            background: #181820;
+            color: #fff;
+            font-size: 1em;
+            padding: 10px 6px;
+            border: none;
+            letter-spacing: 1px;
+            border-right: 1.5px solid #23232b;
+            vertical-align: middle;
+        }
+        .recent-table th:last-child {
+            border-right: none;
+            border-top-right-radius: 14px;
+        }
+        .recent-table th:first-child {
+            border-top-left-radius: 14px;
+        }
+        .recent-table td {
+            background: #fff;
+            color: #23232b;
+            font-size: 0.98em;
+            padding: 7px 4px;
+            border: none;
+            border-bottom: 1.2px solid #e0e0e0;
+            vertical-align: middle;
+        }
+        .recent-table tr:last-child td:first-child {
+            border-bottom-left-radius: 14px;
+        }
+        .recent-table tr:last-child td:last-child {
+            border-bottom-right-radius: 14px;
+        }
+        .recent-table tr:hover td {
+            background: #f5f7fa;
+        }
+        .recent-table .icon-cell {
+            background: #f7f7fa;
+            border-radius: 8px;
+            font-size: 1.05em;
+            color: #23232b;
+            padding: 0 2px;
+            vertical-align: middle;
+        }
+        .recent-table i.fa-solid {
+            font-size: 1.05em;
+            vertical-align: middle;
+        }
+        .recent-table a {
+            color: #1976d2;
+            text-decoration: underline;
+        }
+        .recent-table a:hover {
+            color: #0d47a1;
+        }
+        .recent-list-wrap {
+            margin: 60px auto 60px auto;
+            max-width: 900px;
+        }
+        .recent-list-title {
+            color: #fff;
+            font-size: 1.12em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            margin-left: 8px;
+        }
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .recent-list-row {
+            display: flex;
+            align-items: center;
+            background: #23232b;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0002;
+            padding: 10px 18px;
+            color: #23232b;
+            font-size: 1.02em;
+            gap: 16px;
+        }
+        .recent-list-row .icon-cell {
+            background: #f7f7fa;
+            border-radius: 6px;
+            padding: 4px 7px;
+            font-size: 1.1em;
+            color: #23232b;
+            margin-right: 2px;
+        }
+        .recent-list-row .champion-img {
+            margin-right: 6px;
+        }
+        .recent-list-row .user-link a {
+            color: #1976d2;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .recent-list-row .kda, .recent-list-row .kda-num, .recent-list-row .kp, .recent-list-row .score {
+            color: #23232b;
+            background: #f7f7fa;
+            border-radius: 6px;
+            padding: 2px 8px;
+            margin-left: 4px;
+            font-size: 0.98em;
+        }
     </style>
 </head>
 <body>
@@ -88,25 +214,74 @@
         <a href="/rank/">순위보기</a>
         <a href="/upload/">경기결과입력</a>
     </div>
-    <div style="display:flex; justify-content:center; margin-top:40px;">
-        <table style="background:#222; color:#fff; border-radius:10px; padding:12px; min-width:380px; font-size:1.08em; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
-            <tr style="background:#23232b;">
-                <th style="padding:12px 24px; text-align:center;">유저이름</th>
-                <th style="padding:12px 24px; text-align:center;">승률</th>
-                <th style="padding:12px 24px; text-align:center;">SCORE</th>
-            </tr>
-            {% for user in real_user_stats|slice:":5" %}
+    
+    <!-- 하단 경기기록 테이블 (ace.html 스타일 참고) -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-top:60px; margin-bottom:60px;">
+        <div style="color:#fff; font-size:1.15em; font-weight:bold; margin-bottom:10px; letter-spacing:1px;">최근 경기 기록</div>
+        {% for game in recent_games_rows %}
+        <div style="color:#fff; font-size:1.08em; font-weight:bold; margin-bottom:6px; margin-top:24px;">경기 날짜 : {{ game.date }}</div>
+        <table style="min-width:900px; background:#282838; color:#fff; border-radius:12px; overflow:hidden; border-collapse:separate; border-spacing:0; font-size:1em; box-shadow:0 2px 12px #0002;">
+            <colgroup>
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:10%">
+                <col style="width:10%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:10%">
+            </colgroup>
             <tr>
-                <td style="padding:10px 24px; text-align:center;">
-                    <a href="/search/?name={{ user.name }}" style="color:#fff; text-decoration:underline;">{{ user.name }}</a>
-                </td>
-                <td style="padding:10px 24px; text-align:center;">{{ user.winrate }}%</td>
-                <td style="padding:10px 24px; text-align:center;">{{ user.score }}</td>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-trophy"></i><br>결과</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-mountain"></i><br>라인</th>
+                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-user"></i><br>유저</th>
+                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-xmark"></i><br>데스</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-handshake"></i><br>어시스트</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-chart-line"></i><br>KDA</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-bullseye"></i><br>KP</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-star"></i><br>점수</th>
             </tr>
-            {% empty %}
-            <tr><td colspan="3" style="padding:12px 0; color:#bbb; text-align:center;">데이터 없음</td></tr>
+            {% for row in game.rows %}
+            <tr>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">
+                    {% if row.result == 'win' %}
+                        <i class="fa-solid fa-trophy" style="color:#1976d2;"></i>
+                    {% else %}
+                        <i class="fa-solid fa-flag" style="color:#c0392b;"></i>
+                    {% endif %}
+                </td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">
+                    {% if row.line == 'top' %}<i class="fa-solid fa-mountain"></i>
+                    {% elif row.line == 'jungle' %}<i class="fa-solid fa-tree"></i>
+                    {% elif row.line == 'mid' %}<i class="fa-solid fa-crown"></i>
+                    {% elif row.line == 'adc' %}<i class="fa-solid fa-crosshairs"></i>
+                    {% elif row.line == 'support' %}<i class="fa-solid fa-hand-holding-heart"></i>
+                    {% else %}{{ row.line }}{% endif %}
+                </td>
+                <td style="text-align:center; vertical-align:middle;">
+                    <a href="/search/?name={{ row.user.name }}" style="color:#4a90e2; text-decoration:underline;">{{ row.user.name }}</a>
+                </td>
+                <td style="text-align:center; vertical-align:middle;">
+                    {% if row.champion_img %}
+                        <img src="{% static 'img/' %}{{ row.champion_img }}.png" alt="{{ row.champion }}" style="width:32px; height:32px; border-radius:8px; border:1.5px solid #888; background:#111; display:block; margin:auto;">
+                    {% else %}
+                        <span style="color:#bbb; font-size:0.95em;">이미지 없음</span>
+                    {% endif %}
+                </td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kill }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.death }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.assist }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kda }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kp }}%</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.rank_score }}</td>
+            </tr>
             {% endfor %}
         </table>
+        {% endfor %}
     </div>
 </body>
 </html>
