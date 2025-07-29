@@ -74,7 +74,7 @@
                     <th style="padding:12px 18px; text-align:center;">KDA</th>
                     <th style="padding:12px 18px; text-align:center;">SCORE</th>
                 </tr>
-                {% for user in real_user_stats %}
+                {% for user in user_stats %}
                     <tr
                       {% if forloop.counter == 1 %}
                         style="background:#ffd700; font-weight:bold; color:#000;"
@@ -102,7 +102,7 @@
                       <td style="text-align:center; padding:10px 0;">{{ user.lose }}</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
-                      <td style="text-align:center; padding:10px 0;">{{ user.avg_score }}</td>
+                      <td style="text-align:center; padding:10px 0;">{{ user.score }}</td>
                     </tr>
                 {% empty %}
                 <tr><td colspan="8" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>

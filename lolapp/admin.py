@@ -10,10 +10,13 @@ class GameAdmin(admin.ModelAdmin):
     list_display = ['id', 'unique_key', 'date']
 
 @admin.register(GameData)
+# game_score: 게임별 성과 점수
+# rank_score: 팀 내 순위 점수
+# total_score: 누적 총점
 class GameDataAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'game', 'user', 'result', 'champion', 'line',
-        'kill', 'death', 'assist', 'rank_score'
+        'kill', 'death', 'assist', 'game_score', 'rank_score', 'total_score'
     ]
     ordering = ['id']
     list_filter = ['result', 'line', 'champion']
