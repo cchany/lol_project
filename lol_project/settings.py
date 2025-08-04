@@ -26,6 +26,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-7za0h#o3t-!bozyiz#v$x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# 로컬 개발 환경에서는 항상 DEBUG = True
+if os.environ.get('RENDER') != 'true':
+    DEBUG = True
+
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -42,7 +46,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,6 +53,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# 프로덕션에서만 WhiteNoise 미들웨어 추가
+if os.environ.get('RENDER') == 'true':
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'lol_project.urls'
 
@@ -76,7 +83,7 @@ WSGI_APPLICATION = 'lol_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # Database configuration
-if os.environ.get('DATABASE_URL'):
+if os.environ.get('DATABASE_URL') and os.environ.get('RENDER') == 'true':
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(
@@ -137,8 +144,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'lolapp/static'),
 ]
 
-# WhiteNoise 설정
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise 설정 (프로덕션에서만)
+if os.environ.get('RENDER') == 'true':
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
