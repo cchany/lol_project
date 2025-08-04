@@ -2,17 +2,23 @@
 # exit on error
 set -o errexit
 
+echo "=== Installing requirements ==="
 pip install -r requirements.txt
 pip install gunicorn whitenoise
 
+echo "=== Collecting static files ==="
 python manage.py collectstatic --no-input
+
+echo "=== Running migrations ==="
 python manage.py migrate
 
-# 챔피언 데이터 로드
+echo "=== Loading champion data ==="
 python champion_load.py
 
-# 데이터베이스 연결 테스트
+echo "=== Testing database connection ==="
 python test_db_connection.py
 
-# 데이터베이스 상태 확인
-python check_db.py 
+echo "=== Checking database status ==="
+python check_db.py
+
+echo "=== Build completed successfully ===" 
