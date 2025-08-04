@@ -1,0 +1,1 @@
+web: gunicorn lol_project.wsgi:application 

@@ -511,25 +511,25 @@ def calc_game_score(kill, assist, death, kp):
 
 def get_rank_title(rank_score):
     """팀 내 순위 점수에 따른 타이틀 반환"""
-    if rank_score == 15:
+    if rank_score == 5:
         return "MVP"
-    elif rank_score == 8:
-        return "ACE"
-    elif rank_score == 6:
-        return "Nomal"
     elif rank_score == 4:
-        return "Nomal"
+        return "ACE"
+    elif rank_score == 3:
+        return "Normal"
     elif rank_score == 2:
+        return "Normal"
+    elif rank_score == 1:
         return "Bus"
-    elif rank_score == -2:
+    elif rank_score == -1:
         return "피해자"
+    elif rank_score == -2:
+        return "방관자"
+    elif rank_score == -3:
+        return "방관자"
     elif rank_score == -4:
-        return "방관자"
-    elif rank_score == -6:
-        return "방관자"
-    elif rank_score == -8:
         return "가해자"
-    elif rank_score == -10:
+    elif rank_score == -5:
         return "범인"
     else:
         return ""
@@ -547,13 +547,13 @@ def calculate_rank_scores(game_data_list):
     # 팀 내 순위 점수 계산
     rank_scores = {}
     
-    # 승리팀 순위 점수: +15, +8, +6, +4, +2
-    win_points = [15, 8, 6, 4, 2]
+    # 승리팀 순위 점수: +5, +4, +3, +2, +1
+    win_points = [5, 4, 3, 2, 1]
     for i, (player_idx, _) in enumerate(win_team):
         rank_scores[player_idx] = win_points[i] if i < len(win_points) else 0
     
-    # 패배팀 순위 점수: -2, -4, -6, -8, -10
-    lose_points = [-2, -4, -6, -8, -10]
+    # 패배팀 순위 점수: -1, -2, -3, -4, -5
+    lose_points = [-1, -2, -3, -4, -5]
     for i, (player_idx, _) in enumerate(lose_team):
         rank_scores[player_idx] = lose_points[i] if i < len(lose_points) else 0
     
