@@ -8,6 +8,50 @@ from collections import defaultdict
 
 # OCR, 이미지, crop, 세션 관련 코드 모두 삭제
 
+# 챔피언 이름 → 역할군 매핑
+champion_name_to_role = {
+    # 탱커/서폿
+    "알리스타": "tank", "아무무": "tank", "블리츠크랭크": "tank", "브라움": "tank", "초가스": "tank", "문도 박사": "tank",
+    "갈리오": "tank", "가렌": "tank", "그라가스": "tank", "자르반 4세": "tank", "크산테": "tank", "레오나": "tank",
+    "말파이트": "tank", "마오카이": "tank", "나서스": "tank", "노틸러스": "tank", "오른": "tank", "뽀삐": "tank",
+    "라칸": "tank", "람머스": "tank", "렐": "tank", "세주아니": "tank", "세트": "tank", "쉔": "tank", "신지드": "tank",
+    "사이온": "tank", "스카너": "tank", "탐 켄치": "tank", "타릭": "tank", "쓰레쉬": "tank", "자크": "tank",
+    # 브루저
+    "아트록스": "bruiser", "암베사": "bruiser", "벨베스": "bruiser", "브라이어": "bruiser", "다리우스": "bruiser",
+    "피들스틱": "bruiser", "갱플랭크": "bruiser", "그웬": "bruiser", "헤카림": "bruiser", "케인": "bruiser",
+    "클레드": "bruiser", "리신": "bruiser", "릴리아": "bruiser", "리산드라": "bruiser", "마스터이": "bruiser",
+    "오공": "bruiser", "모데카이저": "bruiser", "나피리": "bruiser", "녹턴": "bruiser", "누누와 윌럼프": "bruiser",
+    "올라프": "bruiser", "판테온": "bruiser", "렉사이": "bruiser", "레넥톤": "bruiser", "렝가": "bruiser",
+    "리븐": "bruiser", "럼블": "bruiser", "샤코": "bruiser", "쉬바나": "bruiser", "스웨인": "bruiser",
+    "사일러스": "bruiser", "탈론": "bruiser", "트런들": "bruiser", "우디르": "bruiser", "우르곳": "bruiser",
+    "바이": "bruiser", "비에고": "bruiser", "블라디미르": "bruiser", "볼리베어": "bruiser", "워윅": "bruiser",
+    "신짜오": "bruiser", "야스오": "bruiser", "요네": "bruiser", "제드": "bruiser",
+    # 스플릿
+    "카밀": "split", "피오라": "split", "나르": "split", "일라오이": "split", "이렐리아": "split",
+    "잭스": "split", "케일": "split", "티모": "split", "트린다미어": "split", "요릭": "split",
+    # 딜러
+    "아리": "dealer", "아칼리": "dealer", "아크샨": "dealer", "애니비아": "dealer", "애니": "dealer",
+    "아펠리오스": "dealer", "애쉬": "dealer", "아우렐리온 솔": "dealer", "오로라": "dealer", "아지르": "dealer",
+    "브랜드": "dealer", "케이틀린": "dealer", "카시오페아": "dealer", "코르키": "dealer", "다이애나": "dealer",
+    "드레이븐": "dealer", "에코": "dealer", "엘리스": "dealer", "이즈리얼": "dealer", "이즈리얼": "dealer",
+    "피즈": "dealer", "그레이브즈": "dealer", "하이머딩거": "dealer", "흐웨이": "dealer", "제이스": "dealer",
+    "진": "dealer", "징크스": "dealer", "카이사": "dealer", "칼리스타": "dealer", "카서스": "dealer",
+    "카사딘": "dealer", "카타리나": "dealer", "케넨": "dealer", "카직스": "dealer", "킨드레드": "dealer",
+    "코그모": "dealer", "르블랑": "dealer", "루시안": "dealer", "럭스": "dealer", "말자하": "dealer",
+    "멜": "dealer", "미스 포츈": "dealer", "니코": "dealer", "니달리": "dealer", "닐라": "dealer",
+    "오리아나": "dealer", "파이크": "dealer", "키아나": "dealer", "퀸": "dealer", "라이즈": "dealer",
+    "사미라": "dealer", "세나": "dealer", "시비르": "dealer", "스몰더": "dealer", "신드라": "dealer",
+    "탈리야": "dealer", "트리스타나": "dealer", "트위스티드 페이트": "dealer", "트위치": "dealer",
+    "바루스": "dealer", "베인": "dealer", "베이가": "dealer", "벨코즈": "dealer", "벡스": "dealer",
+    "빅토르": "dealer", "자야": "dealer", "제라스": "dealer", "유나라": "dealer", "제리": "dealer",
+    "직스": "dealer", "조이": "dealer", "질리언": "dealer", "자이라": "dealer",
+    # 유틸리티
+    "바드": "utility_support", "아이번": "utility_support", "잔나": "utility_support", "카르마": "utility_support",
+    "룰루": "utility_support", "밀리오": "utility_support", "모르가나": "utility_support", "나미": "utility_support",
+    "레나타 글라스크": "utility_support", "세라핀": "utility_support", "소나": "utility_support", "소라카": "utility_support",
+    "유미": "utility_support",
+}
+
 # 유저 순위표 계산 함수 (rank, main에서 공통 사용)
 def get_rank_user_stats():
     # GameData를 user별로 group by하여 집계
@@ -72,9 +116,11 @@ def main(request):
             team_kills[row.result] += row.kill
         rows = []
         for row in game_gamedata:
+            champion = row.champion
+            role = champion_name_to_role.get(champion, "dealer")
             kda = (row.kill + row.assist) / (row.death if row.death != 0 else 1)
             kp = (row.kill + row.assist) / team_kills[row.result] if team_kills[row.result] > 0 else 0
-            game_score = calc_game_score(row.kill, row.assist, row.death, kp)
+            game_score = calc_game_score(row.kill, row.assist, row.death, kp, role)
             rows.append({
                 'result': row.result,
                 'user': row.user,
@@ -207,7 +253,9 @@ def search(request):
                 kp = (gd.kill + gd.assist) / team_total_kill if team_total_kill > 0 else 0
                 
                 # Game Score 계산
-                game_score = calc_game_score(gd.kill, gd.assist, gd.death, kp)
+                champion = gd.champion
+                role = champion_name_to_role.get(champion, "dealer")
+                game_score = calc_game_score(gd.kill, gd.assist, gd.death, kp, role)
                 
                 # Rank Score 계산: DB에 저장된 rank_score 값
                 score_change = gd.rank_score
@@ -505,10 +553,23 @@ def rank(request):
     }
     return render(request, 'lolapp/rank.html', context)
 
-def calc_game_score(kill, assist, death, kp):
-    # KDA 계산 (데스가 0이면 1로 간주)
+def calc_game_score(kill, assist, death, kp, role):
     kda = (kill + assist) / (death if death != 0 else 1)
-    return (kill * 2) + (assist * 1.5) - (death * 3) + (kp * 40) + (kda * 3)
+    if role == 'tank' or role == 'initiate_support':
+        # 탱커/이니시 서폿
+        return (kill * 1.2) + (assist * 2.0) - (death * 1.5) + (kp * 30) + (kda * 2.5)
+    elif role == 'utility_support':
+        # 유틸 서폿
+        return (kill * 1.0) + (assist * 2.2) - (death * 1.2) + (kp * 22) + (kda * 2.7)
+    elif role == 'bruiser':
+        return (kill * 1.6) + (assist * 1.6) - (death * 1.8) + (kp * 27) + (kda * 2.3)
+    elif role == 'split':
+        return (kill * 2.0) + (assist * 1.2) - (death * 2.2) + (kp * 18) + (kda * 2.2)
+    elif role == 'dealer':
+        return (kill * 1.8) + (assist * 1.5) - (death * 2.0) + (kp * 25) + (kda * 2.5)
+    else:
+        # 기본값 (기존 공식)
+        return (kill * 2) + (assist * 1.5) - (death * 3) + (kp * 40) + (kda * 3)
 
 def get_rank_title(rank_score):
     """팀 내 순위 점수에 따른 타이틀 반환"""
@@ -603,7 +664,9 @@ def upload(request):
             result = results[i]
             team_total_kill = team_kills[result]
             kp = (kill + assist) / team_total_kill if team_total_kill > 0 else 0
-            game_score = calc_game_score(kill, assist, death, kp)
+            champion = champion
+            role = champion_name_to_role.get(champion, "dealer")
+            game_score = calc_game_score(kill, assist, death, kp, role)
             game_data_list.append({
                 'user_id': user_id,
                 'champion': champion,
