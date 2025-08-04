@@ -4,7 +4,7 @@ set -o errexit
 
 echo "=== Installing requirements ==="
 pip install -r requirements.txt
-pip install gunicorn whitenoise
+pip install gunicorn whitenoise psycopg2-binary
 
 echo "=== Collecting static files ==="
 python manage.py collectstatic --no-input
