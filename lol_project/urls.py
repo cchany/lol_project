@@ -27,3 +27,7 @@ urlpatterns = [
     path('', views.main, name='main'),  # 루트 URL에 main 뷰 연결
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# 정적 파일 서빙 (개발 환경에서만)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

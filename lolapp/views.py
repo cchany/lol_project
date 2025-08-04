@@ -61,6 +61,7 @@ def main(request):
     real_user_stats = get_rank_user_stats()[:5]
     # 챔피언 한글명 → 영문 champ_id 매핑
     champion_name_map = {c.name: c.champ_id for c in Champion.objects.all()}
+    print(f"챔피언 매핑: {champion_name_map}")
     # 최근 3경기 데이터
     recent_games = Game.objects.order_by('-id')[:3]
     recent_games_rows = []
