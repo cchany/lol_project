@@ -87,10 +87,16 @@
                       <td style="text-align:center; padding:10px 0; min-width:48px;">
                         <span style="display:inline-block; min-width:48px;">
                           {{ forloop.counter }}
-                          {% if forloop.counter == 1 %} <span style="margin-left:2px;">🥇</span>
-                          {% elif forloop.counter == 2 %} <span style="margin-left:2px;">🥈</span>
-                          {% elif forloop.counter == 3 %} <span style="margin-left:2px;">🥉</span>
-                          {% elif forloop.last %} <span style="margin-left:2px;">💩</span>
+                          {% if forloop.counter == 1 %}
+                            <span style="margin-left:2px;">🥇</span>
+                          {% elif forloop.counter == 2 %}
+                            <span style="margin-left:2px;">🥈</span>
+                          {% elif forloop.counter == 3 %}
+                            <span style="margin-left:2px;">🥉</span>
+                          {% elif forloop.last %}
+                            <span style="margin-left:2px;">💩</span>
+                          {% elif forloop.revcounter == 2 %}
+                            <span style="margin-left:2px;">🚽</span>
                           {% endif %}
                         </span>
                       </td>

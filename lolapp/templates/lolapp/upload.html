@@ -79,7 +79,7 @@
                     ];
                     // 정글 라인 챔피언 이름 리스트
                     const jungleList = [
-                        "트런들","자르반 4세","볼리베어","마스터이","브라이어","워윅","카직스","판테온","비에고","에코","샤코","녹턴","리 신","신짜오","벨베스","킨드레드","아이번","케인","다이애나","오공","피들스틱","잭스","니달리","탈론","이블린","그레이브즈","엘리스","누누와 윌럼프","우디르","제드","나피리","그웬","릴리아","자크","헤카림","렝가","아무무","렉사이","바이","자이라","뽀삐","카서스","문도 박사","그라가스","쉬바나","세주아니","탈리야","키아나","스카너"
+                        "트런들","자르반 4세","볼리베어","마스터이","브라이어","워윅","카직스","판테온","비에고","에코","샤코","녹턴","리 신","신 짜오","벨베스","킨드레드","아이번","케인","다이애나","오공","피들스틱","잭스","니달리","탈론","이블린","그레이브즈","엘리스","누누와 윌럼프","우디르","제드","나피리","그웬","릴리아","자크","헤카림","렝가","아무무","렉사이","바이","자이라","뽀삐","카서스","문도 박사","그라가스","쉬바나","세주아니","탈리야","키아나","스카너"
                     ];
                     // 미드 라인 챔피언 이름 리스트
                     const midList = [
@@ -366,7 +366,12 @@
                         {% else %}<i class="fa-solid fa-hand-holding-heart" title="서폿"></i>{% endif %}
                     </td>
                     <td>
-                        <select name="user_{{i}}"> <option value="">선택</option>{% for user in users %}<option value="{{ user.lol_id }}">{{ user.name }}</option>{% endfor %}</select>
+                        <select name="user_{{ forloop.counter0 }}">
+                            <option value="">선택</option>
+                            {% for user in users %}
+                                <option value="{{ user.lol_id }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
                     </td>
                     <td class="champion-cell"></td>
                     <td class="icon-cell"><input type="number" name="kill_{{i}}" min="0" max="99" style="width:36px;"></td>
@@ -374,6 +379,18 @@
                     <td class="icon-cell"><input type="number" name="assist_{{i}}" min="0" max="99" style="width:36px;"></td>
                 </tr>
                 {% endfor %}
+                <!-- Best Player 드롭다운 추가 -->
+                <tr>
+                    <td colspan="10" style="text-align:left; padding-top:12px;">
+                        <label for="best_player">Best Player: </label>
+                        <select name="best_player" id="best_player">
+                            <option value="">-- 선택 --</option>
+                            {% for user in users %}
+                                <option value="{{ user.name }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
             </table>
             <div style="text-align:center; margin-top:24px;">
                 <button type="submit" style="background:#1976d2; color:#fff; border:none; border-radius:6px; padding:10px 36px; font-size:1.1em; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #1976d233;">저장</button>

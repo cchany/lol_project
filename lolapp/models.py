@@ -31,6 +31,7 @@ class GameData(models.Model):
     game_score = models.FloatField(default=0)  # 게임별 성과 점수 (KDA, KP 기반)
     rank_score = models.FloatField(default=0)  # 팀 내 순위에 따른 점수 (+15~-10)
     total_score = models.FloatField(default=100)  # 누적 총점 (100점 시작)
+    is_best_player = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.lol_id} {self.champion} {self.result}"

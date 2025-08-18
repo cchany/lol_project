@@ -1,0 +1,50 @@
+{% extends 'lolapp/header.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>경기 기록 수정</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">유저</label>
+            <input type="text" class="form-control" value="{{ game_data.user.name }}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">챔피언</label>
+            <select name="champion" class="form-select">
+                {% for champ in champions %}
+                <option value="{{ champ.name }}" {% if champ.name == game_data.champion %}selected{% endif %}>{{ champ.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">라인</label>
+            <select name="line" class="form-select">
+                {% for line in lines %}
+                <option value="{{ line }}" {% if line == game_data.line %}selected{% endif %}>{{ line }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">결과</label>
+            <select name="result" class="form-select">
+                <option value="win" {% if game_data.result == 'win' %}selected{% endif %}>승리</option>
+                <option value="lose" {% if game_data.result == 'lose' %}selected{% endif %}>패배</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">킬</label>
+            <input type="number" name="kill" class="form-control" value="{{ game_data.kill }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">데스</label>
+            <input type="number" name="death" class="form-control" value="{{ game_data.death }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">어시스트</label>
+            <input type="number" name="assist" class="form-control" value="{{ game_data.assist }}">
+        </div>
+        <button type="submit" class="btn btn-success">저장</button>
+        <a href="{% url 'database' %}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %} 
