@@ -12,76 +12,137 @@
             background: #23232b; 
             font-family: 'Segoe UI', Arial, sans-serif; 
             color: #e0e0e0; 
-            margin: 0; 
+            margin: 0;
         }
         .container { 
-            max-width: 1200px; 
+            max-width: 1400px; 
             margin: 40px auto; 
             background: #23232b; 
             border-radius: 10px; 
             padding: 24px; 
         }
-        .page-title {
-            color: #fff;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 24px;
+        .section-title { 
+            font-size: 1.2em; 
+            margin: 0 0 20px 0; 
+            color: #90caf9; 
             text-align: center;
-            letter-spacing: 1px;
+            font-weight: bold;
         }
+        
+        /* 필터 섹션 */
         .filter-section {
-            background: #181820;
-            border-radius: 8px;
+            background: #32323e;
+            border-radius: 10px;
             padding: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px #0002;
+        }
+        .filter-row {
             display: flex;
             gap: 16px;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 12px;
         }
-        .filter-section label {
-            color: #fff;
+        .filter-row:last-child {
+            margin-bottom: 0;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-label {
+            color: #90caf9;
             font-weight: bold;
-            margin-right: 8px;
-        }
-        .filter-section select, .filter-section input {
-            padding: 8px 12px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background: #23232b;
-            color: #fff;
+            min-width: 60px;
             font-size: 0.9em;
+            text-align: right;
         }
-        .filter-section button {
-            padding: 8px 16px;
+        .filter-input {
+            padding: 6px 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #181820;
+            color: #fff;
+            font-size: 0.85em;
+            width: 110px;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+        .filter-input::placeholder {
+            color: #888;
+        }
+        .filter-btn {
+            padding: 6px 12px;
             background: #1976d2;
             color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            transition: background 0.2s;
+            font-size: 0.85em;
         }
-        .filter-section button:hover {
+        .filter-btn:hover {
             background: #1565c0;
         }
+        .clear-btn {
+            background: #666;
+        }
+        .clear-btn:hover {
+            background: #555;
+        }
+        
+        /* 통계 카드 */
+        .stats-cards {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #32323e;
+            border-radius: 6px;
+            padding: 12px 16px;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 2px 8px #0002;
+        }
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 3px;
+        }
+        .stat-label {
+            color: #bdbdbd;
+            font-size: 0.8em;
+        }
+        
+        /* 경기 결과 테이블 */
         .games-table {
-            width: 100%;
-            background: #23232b;
-            border-radius: 12px;
+            background: #282838;
+            color: #fff;
+            border-radius: 10px;
             overflow: hidden;
             border-collapse: separate;
             border-spacing: 0;
-            box-shadow: 0 2px 16px #0002;
-            margin-top: 20px;
+            font-size: 0.85em;
+            box-shadow: 0 2px 12px #0002;
+            width: 100%;
         }
         .games-table th {
             background: #181820;
             color: #fff;
-            font-size: 0.95em;
-            padding: 12px 8px;
+            font-size: 0.9em;
+            padding: 8px 6px;
             border: none;
-            letter-spacing: 1px;
-            border-right: 1.5px solid #23232b;
+            letter-spacing: 0.3px;
+            border-right: 1px solid #333;
             vertical-align: middle;
             text-align: center;
         }
@@ -89,32 +150,42 @@
             border-right: none;
         }
         .games-table td {
-            background: #fff;
-            color: #23232b;
-            font-size: 0.9em;
-            padding: 8px 6px;
+            background: #f5f5f5 !important;
+            color: #23232b !important;
+            font-size: 0.85em;
+            padding: 6px 4px;
             border: none;
-            border-bottom: 1.2px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
             vertical-align: middle;
             text-align: center;
         }
         .games-table tr:hover td {
-            background: #f5f7fa;
+            background: #e8e8e8 !important;
         }
         .games-table .icon-cell {
-            background: #f7f7fa;
-            border-radius: 6px;
-            font-size: 1em;
+            background: #eef2f7 !important;
+            border-radius: 5px;
+            font-size: 0.85em;
             color: #23232b;
-            padding: 4px 8px;
+            padding: 3px 5px;
             vertical-align: middle;
         }
         .games-table .champion-img {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1.5px solid #888;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #888;
             background: #111;
+            display: block;
+            margin: auto;
+        }
+        .games-table .user-link a {
+            color: #1976d2;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .games-table .user-link a:hover {
+            color: #0d47a1;
         }
         .games-table .result-win {
             color: #1976d2;
@@ -122,215 +193,204 @@
         .games-table .result-lose {
             color: #c0392b;
         }
-        .games-table .user-link {
-            color: #1976d2;
-            text-decoration: underline;
-            font-weight: bold;
-        }
-        .games-table .user-link:hover {
-            color: #0d47a1;
-        }
+        
+        /* 페이지네이션 */
         .pagination {
             display: flex;
             justify-content: center;
+            gap: 6px;
+            margin-top: 20px;
             align-items: center;
-            gap: 8px;
-            margin-top: 24px;
         }
         .pagination a, .pagination span {
-            padding: 8px 12px;
-            background: #181820;
-            color: #fff;
+            padding: 6px 10px;
+            border-radius: 5px;
             text-decoration: none;
-            border-radius: 4px;
+            color: #90caf9;
+            font-weight: bold;
+            transition: background 0.2s;
             font-size: 0.9em;
+        }
+        .pagination a:hover {
+            background: #32323e;
         }
         .pagination .current {
             background: #1976d2;
-            font-weight: bold;
-        }
-        .pagination a:hover {
-            background: #1976d2;
-        }
-        .no-games {
-            text-align: center;
-            color: #bdbdbd;
-            font-size: 1.1em;
-            margin: 40px 0;
-        }
-        .stats-summary {
-            background: #181820;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
-        .stat-item {
             color: #fff;
         }
-        .stat-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #1976d2;
+        
+        /* 반응형 */
+        @media (max-width: 1200px) {
+            .container { max-width: 95%; padding: 14px; }
+            .filter-row { flex-direction: column; align-items: stretch; }
+            .filter-group { justify-content: space-between; }
         }
-        .stat-label {
-            font-size: 0.9em;
-            color: #bdbdbd;
-            margin-top: 4px;
+        @media (max-width: 768px) {
+            .stats-cards { flex-direction: column; }
+            .games-table { font-size: 0.8em; }
+            .games-table th, .games-table td { padding: 6px 3px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="page-title">
-            <i class="fa-solid fa-database"></i> 경기기록 데이터베이스
-        </div>
-
-        <!-- 통계 요약 -->
-        <div class="stats-summary">
-            <div class="stat-item">
-                <div class="stat-number">{{ total_games }}</div>
-                <div class="stat-label">총 경기 수</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ total_users }}</div>
-                <div class="stat-label">참여 유저</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ avg_score|floatformat:1 }}</div>
-                <div class="stat-label">평균 점수</div>
-            </div>
-        </div>
-
+        <div class="section-title">📊 전체 경기 기록</div>
+        
         <!-- 필터 섹션 -->
         <div class="filter-section">
-            <form method="get" action="{% url 'database' %}" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-                <div>
-                    <label for="user">유저:</label>
-                    <select name="user" id="user">
-                        <option value="">전체 유저</option>
-                        {% for user in users %}
-                        <option value="{{ user.id }}" {% if selected_user == user.id %}selected{% endif %}>{{ user.name }}</option>
-                        {% endfor %}
-                    </select>
+            <form method="get" action="{% url 'database' %}">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">유저:</label>
+                        <input type="text" name="user" class="filter-input" placeholder="유저명 입력" value="{{ selected_user }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">챔피언:</label>
+                        <input type="text" name="champion" class="filter-input" placeholder="한글/영문 챔피언명" value="{{ selected_champion }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">결과:</label>
+                        <select name="result" class="filter-input" style="width: 80px;">
+                            <option value="">전체</option>
+                            <option value="win" {% if selected_result == 'win' %}selected{% endif %}>승리</option>
+                            <option value="lose" {% if selected_result == 'lose' %}selected{% endif %}>패배</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">라인:</label>
+                        <select name="line" class="filter-input" style="width: 80px;">
+                            <option value="">전체</option>
+                            <option value="TOP" {% if selected_line == 'TOP' %}selected{% endif %}>탑</option>
+                            <option value="JUG" {% if selected_line == 'JUG' %}selected{% endif %}>정글</option>
+                            <option value="MID" {% if selected_line == 'MID' %}selected{% endif %}>미드</option>
+                            <option value="ADC" {% if selected_line == 'ADC' %}selected{% endif %}>원딜</option>
+                            <option value="SUP" {% if selected_line == 'SUP' %}selected{% endif %}>서폿</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label for="champion">챔피언:</label>
-                    <select name="champion" id="champion">
-                        <option value="">전체 챔피언</option>
-                        {% for champ in champions %}
-                        <option value="{{ champ }}" {% if selected_champion == champ %}selected{% endif %}>{{ champ }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="filter-row"style="margin-left: 30px;">
+                    <button type="submit" class="filter-btn">
+                        <i class="fa-solid fa-filter"></i> 필터 적용
+                    </button>
+                    <a href="{% url 'database' %}" class="filter-btn clear-btn">
+                        <i class="fa-solid fa-times"></i> 필터 초기화
+                    </a>
                 </div>
-                <div>
-                    <label for="result">결과:</label>
-                    <select name="result" id="result">
-                        <option value="">전체</option>
-                        <option value="win" {% if selected_result == 'win' %}selected{% endif %}>승리</option>
-                        <option value="lose" {% if selected_result == 'lose' %}selected{% endif %}>패배</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="line">라인:</label>
-                    <select name="line" id="line">
-                        <option value="">전체 라인</option>
-                        <option value="top" {% if selected_line == 'top' %}selected{% endif %}>탑</option>
-                        <option value="jungle" {% if selected_line == 'jungle' %}selected{% endif %}>정글</option>
-                        <option value="mid" {% if selected_line == 'mid' %}selected{% endif %}>미드</option>
-                        <option value="adc" {% if selected_line == 'adc' %}selected{% endif %}>원딜</option>
-                        <option value="support" {% if selected_line == 'support' %}selected{% endif %}>서폿</option>
-                    </select>
-                </div>
-                <button type="submit">필터 적용</button>
             </form>
         </div>
-
-        <!-- 경기 데이터 테이블 -->
-        {% if games %}
-        <table class="games-table">
-            <thead>
-                <tr>
-                    <th><i class="fa-solid fa-calendar"></i><br>날짜</th>
-                    <th><i class="fa-solid fa-trophy"></i><br>결과</th>
-                    <th><i class="fa-solid fa-user"></i><br>유저</th>
-                    <th><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
-                    <th><i class="fa-solid fa-mountain"></i><br>라인</th>
-                    <th><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
-                    <th><i class="fa-solid fa-xmark"></i><br>데스</th>
-                    <th><i class="fa-solid fa-handshake"></i><br>어시스트</th>
-                    <th><i class="fa-solid fa-chart-line"></i><br>KDA</th>
-                    <th><i class="fa-solid fa-bullseye"></i><br>KP</th>
-                    <th><i class="fa-solid fa-star"></i><br>점수</th>
-                    <th><i class="fa-solid fa-pen-to-square"></i><br>수정</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for game in games %}
-                <tr>
-                    <td>{{ game.date|date:"m/d H:i" }}</td>
-                    <td class="icon-cell">
-                        {% if game.result == 'win' %}
-                            <i class="fa-solid fa-trophy result-win"></i>
-                        {% else %}
-                            <i class="fa-solid fa-flag result-lose"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="/search/?name={{ game.user.name }}" class="user-link">{{ game.user.name }}</a>
-                    </td>
-                    <td>
-                        {% if game.champion_img %}
-                            <img src="{% static 'img/' %}{{ game.champion_img }}.png" alt="{{ game.champion }}" class="champion-img">
-                        {% else %}
-                            <span style="color:#bbb; font-size:0.9em;">{{ game.champion }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="icon-cell">
-                        {% if game.line == 'top' %}<i class="fa-solid fa-mountain"></i>
-                        {% elif game.line == 'jungle' %}<i class="fa-solid fa-tree"></i>
-                        {% elif game.line == 'mid' %}<i class="fa-solid fa-crown"></i>
-                        {% elif game.line == 'adc' %}<i class="fa-solid fa-crosshairs"></i>
-                        {% elif game.line == 'support' %}<i class="fa-solid fa-hand-holding-heart"></i>
-                        {% else %}{{ game.line }}{% endif %}
-                    </td>
-                    <td class="icon-cell">{{ game.kill }}</td>
-                    <td class="icon-cell">{{ game.death }}</td>
-                    <td class="icon-cell">{{ game.assist }}</td>
-                    <td class="icon-cell">{{ game.kda }}</td>
-                    <td class="icon-cell">{{ game.kp }}%</td>
-                    <td class="icon-cell">{{ game.game_score }}</td>
-                    <td class="icon-cell"><a href="{% url 'edit_game' game.id %}" class="btn btn-sm btn-primary">수정</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- 페이지네이션 -->
-        {% if games.has_other_pages %}
-        <div class="pagination">
-            {% if games.has_previous %}
-                <a href="?page=1{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_champion %}&champion={{ selected_champion }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if selected_line %}&line={{ selected_line }}{% endif %}">&laquo; 처음</a>
-                <a href="?page={{ games.previous_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_champion %}&champion={{ selected_champion }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if selected_line %}&line={{ selected_line }}{% endif %}">이전</a>
-            {% endif %}
-
-            <span class="current">
-                {{ games.number }} / {{ games.paginator.num_pages }}
-            </span>
-
-            {% if games.has_next %}
-                <a href="?page={{ games.next_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_champion %}&champion={{ selected_champion }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if selected_line %}&line={{ selected_line }}{% endif %}">다음</a>
-                <a href="?page={{ games.paginator.num_pages }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_champion %}&champion={{ selected_champion }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if selected_line %}&line={{ selected_line }}{% endif %}">마지막 &raquo;</a>
-            {% endif %}
+        
+        <!-- 통계 카드 -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number">{{ unique_games_count }}</div>
+                <div class="stat-label">총 경기 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">참여 유저 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ avg_score|floatformat:1 }}</div>
+                <div class="stat-label">평균 AI 점수</div>
+            </div>
         </div>
-        {% endif %}
+        
+        <!-- 경기별로 그룹화된 테이블 -->
+        {% for game_group in game_groups %}
+        <div class="game-group" style="margin-bottom: 32px;">
+            <div class="game-header" style="background: #181820; color: #fff; padding: 16px 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px #0002;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-gamepad" style="color: #90caf9; font-size: 1.2em;"></i>
+                    <span style="font-weight: bold; font-size: 1.1em;">경기 #{{ game_group.game_id }}</span>
+                    <span style="color: #bdbdbd; font-size: 0.95em;">({{ game_group.date }})</span>
+                    <span style="background: #333; padding: 4px 8px; border-radius: 6px; font-size: 0.85em; color: #90caf9;">{{ game_group.unique_key }}</span>
+                </div>
 
-        {% else %}
-        <div class="no-games">
-            <i class="fa-solid fa-database" style="font-size: 3em; color: #444; margin-bottom: 16px;"></i>
-            <p>조건에 맞는 경기 기록이 없습니다.</p>
+            </div>
+            
+            <table class="games-table" style="border-radius: 0 0 12px 12px;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;"><i class="fa-solid fa-trophy"></i><br>결과</th>
+                        <th style="width: 8%;"><i class="fa-solid fa-mountain"></i><br>라인</th>
+                        <th style="width: 12%;"><i class="fa-solid fa-user"></i><br>유저</th>
+                        <th style="width: 10%;"><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
+                        <th style="width: 6%;"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
+                        <th style="width: 6%;"><i class="fa-solid fa-xmark"></i><br>데스</th>
+                        <th style="width: 6%;"><i class="fa-solid fa-handshake"></i><br>어시</th>
+                        <th style="width: 8%;"><i class="fa-solid fa-chart-line"></i><br>KDA</th>
+                        <th style="width: 8%;"><i class="fa-solid fa-bolt"></i><br>데미지</th>
+                        <th style="width: 6%;"><i class="fa-solid fa-leaf"></i><br>CS</th>
+                        <th style="width: 8%;"><i class="fa-solid fa-robot"></i><br>AI 점수</th>
+                        <th style="width: 8%;"><i class="fa-solid fa-ranking-star"></i><br>순위</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in game_group.games %}
+                    <tr>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">
+                            {% if game.result == 'win' %}
+                                <i class="fa-solid fa-trophy result-win"></i>
+                            {% else %}
+                                <i class="fa-solid fa-flag result-lose"></i>
+                            {% endif %}
+                        </td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">
+                            {% if game.line == 'TOP' %}탑
+                            {% elif game.line == 'JUG' %}정글
+                            {% elif game.line == 'MID' %}미드
+                            {% elif game.line == 'ADC' %}원딜
+                            {% elif game.line == 'SUP' %}서폿
+                            {% else %}{{ game.line }}{% endif %}
+                        </td>
+                        <td class="user-link" style="background: #f5f5f5 !important;">
+                            <a href="/search/?name={{ game.user.name }}">{{ game.user.name }}</a>
+                        </td>
+                        <td style="background: #f5f5f5 !important;">
+                            <img src="{% static 'img/' %}{{ game.champion_img }}.png" alt="{{ game.champion }}" class="champion-img">
+                        </td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.kill }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.death }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.assist }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.kda|default:"-" }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.damage|default:"-" }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.cs|default:"-" }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.ai_score|default:"-" }}</td>
+                        <td class="icon-cell" style="background: #eef2f7 !important;">{{ game.placement|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #888; background: #f5f5f5; border-radius: 12px;">
+            <i class="fa-solid fa-info-circle" style="margin-right: 8px;"></i>
+            조건에 맞는 경기 기록이 없습니다.
+        </div>
+        {% endfor %}
+        
+        <!-- 페이지네이션 -->
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{% if selected_user %}user={{ selected_user }}&{% endif %}{% if selected_champion %}champion={{ selected_champion }}&{% endif %}{% if selected_result %}result={{ selected_result }}&{% endif %}{% if selected_line %}line={{ selected_line }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                    <i class="fa-solid fa-chevron-left"></i> 이전
+                </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span class="current">{{ num }}</span>
+                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <a href="?{% if selected_user %}user={{ selected_user }}&{% endif %}{% if selected_champion %}champion={{ selected_champion }}&{% endif %}{% if selected_result %}result={{ selected_result }}&{% endif %}{% if selected_line %}line={{ selected_line }}&{% endif %}page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?{% if selected_user %}user={{ selected_user }}&{% endif %}{% if selected_champion %}champion={{ selected_champion }}&{% endif %}{% if selected_result %}result={{ selected_result }}&{% endif %}{% if selected_line %}line={{ selected_line }}&{% endif %}page={{ page_obj.next_page_number }}">
+                    다음 <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

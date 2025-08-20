@@ -16,7 +16,7 @@ class GameAdmin(admin.ModelAdmin):
 class GameDataAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'game', 'user', 'result', 'champion', 'line',
-        'kill', 'death', 'assist', 'game_score', 'rank_score', 'total_score'
+        'kill', 'death', 'assist','cs', 'damage', 'kda_ratio', 'ai_score', 'placement', 'rank','total_score'
     ]
     ordering = ['id']
     list_filter = ['result', 'line', 'champion']

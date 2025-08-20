@@ -28,10 +28,13 @@ class GameData(models.Model):
     kill = models.IntegerField()
     death = models.IntegerField()
     assist = models.IntegerField()
-    game_score = models.FloatField(default=0)  # 게임별 성과 점수 (KDA, KP 기반)
-    rank_score = models.FloatField(default=0)  # 팀 내 순위에 따른 점수 (+15~-10)
+    cs = models.IntegerField(default=0)
+    damage = models.IntegerField(default=0)
+    ai_score = models.FloatField(default=0)    
+    kda_ratio = models.FloatField(default=0)
+    placement = models.CharField(max_length=10, default="")
+    rank = models.CharField(max_length=10, default="")
     total_score = models.FloatField(default=100)  # 누적 총점 (100점 시작)
-    is_best_player = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.lol_id} {self.champion} {self.result}"

@@ -12,4 +12,5 @@ urlpatterns = [
 
 urlpatterns += [
     path('edit_game/<int:game_id>/', edit_game, name='edit_game'),
+    path('upload/save/', views.upload_save, name='upload_save'),
 ]

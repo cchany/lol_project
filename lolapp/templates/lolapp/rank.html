@@ -26,17 +26,65 @@
         .user-rank { width: 32px; font-weight: bold; color: #90caf9; }
         .user-name { flex: 1; font-weight: bold; }
         .user-score { color: #ffd600; font-weight: bold; }
-        .vs-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .vs-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .vs-table th, .vs-table td { border: none; background: #32323e; padding: 12px 8px; }
         .vs-table th { color: #90caf9; font-size: 1em; }
         .vs-table .win { color: #81c784; font-weight: bold; }
         .vs-table .lose { color: #ef5350; font-weight: bold; }
-        .kda-score { color: #4caf50; font-weight: bold; margin-left: 8px; }
+        .combined-winrate-bar { 
+            width: 100%; 
+            height: 12px; 
+            background-color: #444; 
+            border-radius: 6px; 
+            margin: 0; 
+            overflow: hidden; 
+            display: flex; 
+        }
+        .vs-table tr.bar-row td { padding-top: 6px; padding-bottom: 12px; background: transparent; }
+        .dominant-fill { 
+            height: 100%; 
+            background-color: #4caf50; 
+            transition: width 0.3s ease; 
+        }
+        .subordinate-fill { 
+            height: 100%; 
+            background-color: #f44336; 
+            transition: width 0.3s ease; 
+        }
+        .kda-score { color: #1976d2; font-weight: bold; margin-left: 8px; }
         .death { color: #ef5350; font-weight: bold; }
         .vs-table .win, .vs-table .win * { color: #81c784 !important; font-weight: bold; }
         .vs-table .lose, .vs-table .lose * { color: #ef5350 !important; font-weight: bold; }
         .kda-score { margin-left: 8px; }
         .vs-table td { font-size: 1.05em; }
+        
+        /* 승률에 따른 박스 배경색 */
+        .vs-table .win {
+            background: rgba(25, 118, 210, 0.1) !important;
+            border: 2px solid rgba(25, 118, 210, 0.3);
+            border-radius: 8px;
+        }
+        
+        .vs-table .lose {
+            background: rgba(244, 67, 54, 0.1) !important;
+            border: 2px solid rgba(244, 67, 54, 0.3);
+            border-radius: 8px;
+        }
+        
+        .winrate-text {
+            font-size: 0.8em;
+            margin-top: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .win .winrate-text {
+            color: #1976d2;
+        }
+        
+        .lose .winrate-text {
+            color: #f44336;
+        }
     </style>
     <script>
         function showTab(idx) {
@@ -45,9 +93,32 @@
         }
         function filterLine(tabIdx, line) {
             document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.line === line));
-            document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-row').forEach(row => {
-                row.style.display = (line === 'all' || row.dataset.line === line) ? '' : 'none';
-            });
+            
+            // 라인별 순위표 (탭 인덱스 2)에서만 특별 처리
+            if (tabIdx === 2) {
+                const allLineStats = document.getElementById('all-line-stats');
+                const lineStats = document.getElementById('line-stats');
+                
+                if (line === 'all') {
+                    // 전체 버튼: 전체 정렬된 리스트 표시 (total_score 기준)
+                    allLineStats.style.display = '';
+                    lineStats.style.display = 'none';
+                } else {
+                    // 특정 라인 버튼: 라인별 그룹화된 리스트 표시
+                    allLineStats.style.display = 'none';
+                    lineStats.style.display = '';
+                    
+                    // 해당 라인의 행만 표시
+                    lineStats.querySelectorAll('.line-row').forEach(row => {
+                        row.style.display = (row.dataset.line === line) ? '' : 'none';
+                    });
+                }
+            } else {
+                // 다른 탭들은 기존 방식대로 처리
+                document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-row').forEach(row => {
+                    row.style.display = (line === 'all' || row.dataset.line === line) ? '' : 'none';
+                });
+            }
         }
         window.onload = function() { showTab(0); };
     </script>
@@ -120,19 +191,19 @@
             <div class="section-title">챔피언별 승률🚩</div>
             <div class="line-filter">
                 <button class="line-btn active" data-line="all" onclick="filterLine(1, 'all')">전체</button>
-                <button class="line-btn" data-line="top" onclick="filterLine(1, 'top')">탑</button>
-                <button class="line-btn" data-line="jungle" onclick="filterLine(1, 'jungle')">정글</button>
-                <button class="line-btn" data-line="mid" onclick="filterLine(1, 'mid')">미드</button>
-                <button class="line-btn" data-line="adc" onclick="filterLine(1, 'adc')">원딜</button>
-                <button class="line-btn" data-line="support" onclick="filterLine(1, 'support')">서폿</button>
+                <button class="line-btn" data-line="탑" onclick="filterLine(1, '탑')">탑</button>
+                <button class="line-btn" data-line="정글" onclick="filterLine(1, '정글')">정글</button>
+                <button class="line-btn" data-line="미드" onclick="filterLine(1, '미드')">미드</button>
+                <button class="line-btn" data-line="원딜" onclick="filterLine(1, '원딜')">원딜</button>
+                <button class="line-btn" data-line="서폿" onclick="filterLine(1, '서폿')">서폿</button>
             </div>
             <table>
                 <tr>
                     <th>CHAMPION</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th>
                 </tr>
-                {% for champ in champ_stats %}
+                {% for champ in champion_stats %}
                 <tr class="line-row" data-line="{{ champ.line }}">
-                    <td><img src="{% static 'img/' %}{{ champ.champion_img }}.png" class="champion-img">{{ champ.champion }}</td>
+                    <td><img src="{% static 'img/' %}{{ champ.champion_img }}.png" class="champion-img"></td>
                     <td>{{ champ.line }}</td>
                     <td>{{ champ.games }}</td>
                     <td>{{ champ.win }}</td>
@@ -150,31 +221,52 @@
             <div class="section-title">라인별 순위표🥇🥈🥉</div>
             <div class="line-filter">
                 <button class="line-btn active" data-line="all" onclick="filterLine(2, 'all')">전체</button>
-                <button class="line-btn" data-line="top" onclick="filterLine(2, 'top')">탑</button>
-                <button class="line-btn" data-line="jungle" onclick="filterLine(2, 'jungle')">정글</button>
-                <button class="line-btn" data-line="mid" onclick="filterLine(2, 'mid')">미드</button>
-                <button class="line-btn" data-line="adc" onclick="filterLine(2, 'adc')">원딜</button>
-                <button class="line-btn" data-line="support" onclick="filterLine(2, 'support')">서폿</button>
+                <button class="line-btn" data-line="탑" onclick="filterLine(2, '탑')">탑</button>
+                <button class="line-btn" data-line="정글" onclick="filterLine(2, '정글')">정글</button>
+                <button class="line-btn" data-line="미드" onclick="filterLine(2, '미드')">미드</button>
+                <button class="line-btn" data-line="원딜" onclick="filterLine(2, '원딜')">원딜</button>
+                <button class="line-btn" data-line="서폿" onclick="filterLine(2, '서폿')">서폿</button>
             </div>
             <table>
                 <tr>
                     <th>RANK</th><th>USER</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th><th>SCORE</th>
                 </tr>
-                {% for user in line_user_stats %}
-                <tr class="line-row" data-line="{{ user.line }}">
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ user.name }}</td>
-                    <td>{{ user.line }}</td>
-                    <td>{{ user.total }}</td>
-                    <td>{{ user.win }}</td>
-                    <td>{{ user.lose }}</td>
-                    <td>{{ user.winrate }}%</td>
-                    <td>{{ user.kda }}</td>
-                    <td>{{ user.score }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="9">데이터가 없습니다.</td></tr>
-                {% endfor %}
+                <!-- 전체 정렬된 리스트 (total_score 기준) -->
+                <tbody id="all-line-stats">
+                    {% for user in all_line_user_stats %}
+                    <tr class="line-row" data-line="{{ user.line }}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.line }}</td>
+                        <td>{{ user.total }}</td>
+                        <td>{{ user.win }}</td>
+                        <td>{{ user.lose }}</td>
+                        <td>{{ user.winrate }}%</td>
+                        <td>{{ user.kda }}</td>
+                        <td>{{ user.score }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9">데이터가 없습니다.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <!-- 라인별 정렬된 리스트 (라인별 그룹화) -->
+                <tbody id="line-stats" style="display: none;">
+                    {% for user in line_user_stats %}
+                    <tr class="line-row" data-line="{{ user.line }}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.line }}</td>
+                        <td>{{ user.total }}</td>
+                        <td>{{ user.win }}</td>
+                        <td>{{ user.lose }}</td>
+                        <td>{{ user.winrate }}%</td>
+                        <td>{{ user.kda }}</td>
+                        <td>{{ user.score }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9">데이터가 없습니다.</td></tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
         <!-- 4. user별 상대전적 -->
@@ -182,11 +274,11 @@
             <div class="section-title">유저별 상대전적🥊</div>
             <div class="line-filter">
                 <button class="line-btn active" data-line="all" onclick="filterLine(3, 'all')">전체</button>
-                <button class="line-btn" data-line="top" onclick="filterLine(3, 'top')">탑</button>
-                <button class="line-btn" data-line="jungle" onclick="filterLine(3, 'jungle')">정글</button>
-                <button class="line-btn" data-line="mid" onclick="filterLine(3, 'mid')">미드</button>
-                <button class="line-btn" data-line="adc" onclick="filterLine(3, 'adc')">원딜</button>
-                <button class="line-btn" data-line="support" onclick="filterLine(3, 'support')">서폿</button>
+                <button class="line-btn" data-line="탑" onclick="filterLine(3, '탑')">탑</button>
+                <button class="line-btn" data-line="정글" onclick="filterLine(3, '정글')">정글</button>
+                <button class="line-btn" data-line="미드" onclick="filterLine(3, '미드')">미드</button>
+                <button class="line-btn" data-line="원딜" onclick="filterLine(3, '원딜')">원딜</button>
+                <button class="line-btn" data-line="서폿" onclick="filterLine(3, '서폿')">서폿</button>
             </div>
             <table class="vs-table">
                 <tr>
@@ -195,17 +287,33 @@
                 {% for line, vs_list in vs_stats.items %}
                     {% for pair in vs_list %}
                         <tr class="line-row" data-line="{{ line }}">
-                            <td class="win">
+                            <td>
                                 <div style="font-size:1.1em;">{{ pair.0.name }}</div>
+                                <div style="font-size:0.9em; color:#888;">{{ pair.0.total }}전 {{ pair.0.wins }}승{{ pair.0.losses }}패</div>
                                 <div>{{ pair.0.k_sum }} / {{ pair.0.d_sum }} / {{ pair.0.a_sum }}</div>
-                                <div class="kda-score">평점 {{ pair.0.kda }}</div>
-                                <div style="font-size:0.95em;">승률: {{ pair.0.winrate }}%</div>
+                                <div class="kda-score">KDA: {{ pair.0.kda }}</div>
+                                <div class="winrate-text" style="color: #4caf50;">승률 {{ pair.0.winrate }}%</div>
                             </td>
-                            <td class="lose">
+                            <td>
                                 <div style="font-size:1.1em;">{{ pair.1.name }}</div>
+                                <div style="font-size:0.9em; color:#888;">{{ pair.1.total }}전 {{ pair.1.wins }}승{{ pair.1.losses }}패</div>
                                 <div>{{ pair.1.k_sum }} / {{ pair.1.d_sum }} / {{ pair.1.a_sum }}</div>
-                                <div class="kda-score">평점 {{ pair.1.kda }}</div>
-                                <div style="font-size:0.95em;">승률: {{ pair.1.winrate }}%</div>
+                                <div class="kda-score">KDA: {{ pair.1.kda }}</div>
+                                <div class="winrate-text" style="color: #f44336;">승률 {{ pair.1.winrate }}%</div>
+                            </td>
+                        </tr>
+                        <tr class="line-row bar-row" data-line="{{ line }}">
+                            <td colspan="2">
+                                <div class="combined-winrate-bar">
+                                    <div class="dominant-fill" style="width: {{ pair.0.winrate }}%; background-color: #4caf50;"></div>
+                                    <div class="subordinate-fill" style="width: {{ pair.1.winrate }}%; background-color: #f44336;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2" style="text-align:center; color:#888; padding:20px;">
+                                해당 라인에서 상대로 만난 유저가 없습니다.
                             </td>
                         </tr>
                     {% endfor %}

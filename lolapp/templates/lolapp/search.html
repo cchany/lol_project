@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 {% include 'lolapp/header.html' %}
 <link rel="stylesheet" href="{% static 'header.css' %}">
 <!DOCTYPE html>
@@ -8,7 +9,7 @@
     <title>전적검색</title>
     <style>
         body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; color: #e0e0e0; }
-        .container { max-width: 1300px; margin: 24px auto; background: #23232b; border-radius: 10px; padding: 18px 18px 0 18px; }
+        .container { max-width: 1500px; margin: 24px auto; background: #23232b; border-radius: 10px; padding: 0; }
         .search-bar { display: flex; gap: 8px; margin-bottom: 24px; }
         .search-bar input { flex: 1; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #181820; color: #fff; }
         .search-bar button { padding: 8px 16px; background: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
@@ -36,8 +37,8 @@
         .team-user-winrate { font-weight: bold; min-width: 48px; text-align: right; }
         .team-user-winrate.red { color: #ef5350; }
         .team-user-winrate.green { color: #81c784; }
-        .game-list { display: flex; flex-direction: column; gap: 12px; }
-        .game-card { background: #26324a; border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; border-left: 6px solid #1976d2; }
+        .game-list { display: flex; flex-direction: column; gap: 12px; padding-left: 24px; padding-right: 24px; }
+        .game-card { background: #26324a; border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; border-left: 6px solid #1976d2; position: relative; }
         .game-card.lose { border-left: 6px solid #ef5350; }
         .game-champion { display: flex; align-items: center; margin-right: 20px; }
         .game-champion img { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
@@ -71,10 +72,13 @@
             background: #23232b;
             border-radius: 32px;
             padding: 24px 18px;
-            min-width: 400px;
-            max-width: 900px;
+            min-width: 800px;
+            max-width: 1600px;
+            width: 100%;
             flex: 1 1 0%;
             margin: 0 auto;
+            margin-left: auto;
+            margin-right: auto;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -198,18 +202,18 @@
             </div>
 
             <!-- 3번: 게임 기록 (오른쪽) -->
-            <div class="panel-large">
+            <div class="panel-large" style="min-width:600px; max-width:1400px; width:100%;">
                 <div class="section-title">게임 기록🎮</div>
 
                 <div class="game-list" style="flex:1 1 auto;">
                     {% for game in game_records %}
-                    <div class="game-card {% if game.result == 'lose' %}lose{% else %}win{% endif %}" style="display:flex; justify-content:space-between; align-items:center; background:{% if game.result == 'lose' %}#c62828{% else %}#1976d2{% endif %}; color:#fff; border:none;">
+                    <div class="game-card {% if game.result == 'lose' %}lose{% else %}win{% endif %}" style="display:flex; justify-content:space-between; align-items:center; background:{% if game.result == 'lose' %}#d32f2f{% else %}#1565c0{% endif %}; color:#fff; border:none;">
                         <!-- 왼쪽: 주요 정보 -->
                         <div style="display:flex; align-items:center; gap:16px;">
                             <div class="game-champion">
                                 <img src="{% static 'img/' %}{{ game.champion_img }}.png">
-                                <span>{{ game.champion }}</span>
                             </div>
+
                             <div class="game-info" style="text-align:left;">
                                 <div class="game-kda" style="display:flex; align-items:center; gap:4px; font-size:1.1em; font-weight:bold;">
                                     <span>{{ game.kill }}</span> / <span class="death">{{ game.death }}</span> / <span>{{ game.assist }}</span> <span class="score">{{ game.kda }} 평점</span>
@@ -224,30 +228,47 @@
                                 </div>
                                 <div class="game-vs" style="display:flex; gap:12px; margin-top:4px; font-size:0.9em; color:#bdbdbd;">상대: {{ game.opponent }}</div>
                             </div>
+                            <!-- placement, ai score 박스 -->
+                            <div style="display:flex; gap:6px; align-items:center; position:absolute; right: 520px; top:50%; transform:translateY(-50%);">
+                                <div style="background:{% if game.ai_score < 50 %}#ef5350{% elif game.ai_score >= 50 and game.ai_score < 80 %}#4caf50{% elif game.ai_score >= 80 and game.ai_score < 90 %}#ffd600{% else %}#9c27b0{% endif %}; color:{% if game.ai_score >= 80 and game.ai_score < 90 %}#000{% else %}#fff{% endif %}; border-radius:12px; padding:8px 18px; min-width:20px; text-align:center; font-weight:bold; font-size:1.05em; box-shadow:0 2px 8px #0002;">
+                                    {{ game.ai_score }}
+                                </div>
+                                <div style="background:#fff; color:#23232b; border-radius:12px; padding:8px 18px; min-width:20px; text-align:center; font-weight:bold; font-size:1em; box-shadow:0 2px 8px #0002;">
+                                    {{ game.placement }}
+                                </div>
+                            </div>
                         </div>
                         <!-- 오른쪽: 승리팀/패배팀 2열 5행 -->
-                        <div style="display:flex; flex-direction:row; gap:16px; align-items:flex-start; min-width:140px; margin-right:20px;">
+                        <table style="width:auto; border-collapse:separate; border-spacing:8px 2px; background:none;">
+                          {% for win, lose in game.win_users|zip:game.lose_users %}
+                          <tr>
                             <!-- 승리팀 -->
-                            <div style="display:flex; flex-direction:column; gap:3px; align-items:flex-end;">
-                                {% for user in game.win_users %}
-                                <div style="display:flex; align-items:center; gap:3px;">
-                                    <img src="{% static 'img/' %}{{ user.champion_img }}.png" style="width:18px; height:18px; border-radius:50%; border:2px solid #fff;">
-                                    <a href="?name={{ user.name }}" style="font-size:0.8em; color:#fff; white-space:nowrap; max-width:60px; overflow:hidden; text-overflow:ellipsis; text-decoration:none; cursor:pointer;">{{ user.name }}</a>
-                                    <span style="font-size:0.8em; color:#ffd600; white-space:nowrap;">({{ user.kill }}/{{ user.death }}/{{ user.assist }})</span>
-                                </div>
-                                {% endfor %}
-                            </div>
+                            <td style="text-align:right; padding:0 4px;">
+                              <img src="{% static 'img/' %}{{ win.champion_img }}.png" style="width:18px; height:18px; border-radius:50%; border:2px solid #fff;">
+                            </td>
+                            <td style="text-align:right; padding:0 4px;">
+                              <a href="?name={{ win.name }}" style="font-size:0.8em; color:#fff;">{{ win.name }}</a>
+                            </td>
+                            <td style="text-align:right; padding:0 4px;">
+                              <span style="font-size:0.8em; color:#ffd600;">({{ win.kill }}/{{ win.death }}/{{ win.assist }})</span>
+                              <span style="font-size:0.75em; color:#b2ebf2; margin-left:4px;">{{ win.ai_score }}{{ win.ai_emoji }}</span>
+                            </td>
+                            <!-- VS 구분선 -->
+                            <td style="text-align:center; color:#fff; padding:0 4px;">vs</td>
                             <!-- 패배팀 -->
-                            <div style="display:flex; flex-direction:column; gap:3px; align-items:flex-start;">
-                                {% for user in game.lose_users %}
-                                <div style="display:flex; align-items:center; gap:3px;">
-                                    <span style="font-size:0.8em; color:#ffd600; white-space:nowrap;">({{ user.kill }}/{{ user.death }}/{{ user.assist }})</span>
-                                    <span style="font-size:0.8em; color:#fff; white-space:nowrap; max-width:60px; overflow:hidden; text-overflow:ellipsis;">{{ user.name }}</span>
-                                    <img src="{% static 'img/' %}{{ user.champion_img }}.png" style="width:18px; height:18px; border-radius:50%; border:2px solid #fff;">
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
+                            <td style="text-align:left; padding:0 4px;">
+                                <span style="font-size:0.75em; color:#b2ebf2; margin-left:4px;">{{ lose.ai_emoji }}{{ lose.ai_score }}</span>
+                                <span style="font-size:0.8em; color:#ffd600;">({{ lose.kill }}/{{ lose.death }}/{{ lose.assist }})</span>
+                            </td>
+                            <td style="text-align:left; padding:0 4px;">
+                                <a href="?name={{ lose.name }}" style="font-size:0.8em; color:#fff;">{{ lose.name }}</a>
+                            </td>
+                            <td style="text-align:left; padding:0 4px;">
+                              <img src="{% static 'img/' %}{{ lose.champion_img }}.png" style="width:18px; height:18px; border-radius:50%; border:2px solid #fff;">
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </table>
                     </div>
                     {% empty %}
                     <div style="color:#bdbdbd; padding:16px;">게임 기록이 없습니다.😒</div>

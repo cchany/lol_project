@@ -235,16 +235,18 @@
                 <col style="width:10%">
             </colgroup>
             <tr>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-trophy"></i><br>결과</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-mountain"></i><br>라인</th>
-                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-user"></i><br>유저</th>
-                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-chess-knight"></i><br>챔피언</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-skull-crossbones"></i><br>킬</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-xmark"></i><br>데스</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-handshake"></i><br>어시스트</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-trophy"></i><br>Result</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-mountain"></i><br>Line</th>
+                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-user"></i><br>User</th>
+                <th style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-chess-knight"></i><br>Champion</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-skull-crossbones"></i><br>Kill</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-xmark"></i><br>Death</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-handshake"></i><br>Assist</th>
                 <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-chart-line"></i><br>KDA</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-bullseye"></i><br>KP</th>
-                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-star"></i><br>점수</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-bolt"></i><br>Damage</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-leaf"></i><br>CS</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-robot"></i><br>AI SCORE</th>
+                <th class="icon-cell" style="text-align:center; vertical-align:middle; padding:10px 0;"><i class="fa-solid fa-ranking-star"></i><br>RANK</th>
             </tr>
             {% for row in game.rows %}
             <tr>
@@ -256,29 +258,27 @@
                     {% endif %}
                 </td>
                 <td class="icon-cell" style="text-align:center; vertical-align:middle;">
-                    {% if row.line == 'top' %}<i class="fa-solid fa-mountain"></i>
-                    {% elif row.line == 'jungle' %}<i class="fa-solid fa-tree"></i>
-                    {% elif row.line == 'mid' %}<i class="fa-solid fa-crown"></i>
-                    {% elif row.line == 'adc' %}<i class="fa-solid fa-crosshairs"></i>
-                    {% elif row.line == 'support' %}<i class="fa-solid fa-hand-holding-heart"></i>
+                    {% if row.line == 'TOP' %}TOP
+                    {% elif row.line == 'JUG' %}JUG
+                    {% elif row.line == 'MID' %}MID
+                    {% elif row.line == 'ADC' %}ADC
+                    {% elif row.line == 'SUP' %}SUP
                     {% else %}{{ row.line }}{% endif %}
                 </td>
                 <td style="text-align:center; vertical-align:middle;">
                     <a href="/search/?name={{ row.user.name }}" style="color:#4a90e2; text-decoration:underline;">{{ row.user.name }}</a>
                 </td>
                 <td style="text-align:center; vertical-align:middle;">
-                    {% if row.champion_img %}
-                        <img src="{% static 'img/' %}{{ row.champion_img }}.png" alt="{{ row.champion }}" style="width:32px; height:32px; border-radius:8px; border:1.5px solid #888; background:#111; display:block; margin:auto;">
-                    {% else %}
-                        <span style="color:#bbb; font-size:0.95em;">이미지 없음</span>
-                    {% endif %}
+                    <img src="{% static 'img/' %}{{ row.champion }}.png" alt="{{ row.champion }}" style="width:32px; height:32px; border-radius:8px; border:1.5px solid #888; background:#111; display:block; margin:auto;">
                 </td>
                 <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kill }}</td>
                 <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.death }}</td>
                 <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.assist }}</td>
                 <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kda }}</td>
-                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.kp }}%</td>
-                                        <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.game_score }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.damage }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.cs }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.ai_score }}</td>
+                <td class="icon-cell" style="text-align:center; vertical-align:middle;">{{ row.placement }}</td>
             </tr>
             {% endfor %}
         </table>
