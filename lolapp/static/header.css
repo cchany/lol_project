@@ -22,6 +22,65 @@
     width: auto;
     margin-right: 10px;
 }
+
+.site-header .header-right {
+    display: flex;
+    align-items: center;
+}
+
+.site-header .patchnote-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    border-radius: 8px;
+    padding: 12px 24px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    border: 2px solid #1976d2;
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.site-header .patchnote-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.site-header .patchnote-btn:hover::before {
+    opacity: 1;
+}
+
+.site-header .patchnote-btn:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+    border-color: #1565c0;
+    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+    transform: translateY(-2px);
+}
+
+.site-header .patchnote-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+.site-header .patchnote-btn i {
+    font-size: 1.1em;
+}
 .site-header .nav {
     display: flex;
     gap: 18px;

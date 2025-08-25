@@ -35,6 +35,7 @@ class GameData(models.Model):
     placement = models.CharField(max_length=10, default="")
     rank = models.CharField(max_length=10, default="")
     total_score = models.FloatField(default=100)  # 누적 총점 (100점 시작)
+    title = models.CharField(max_length=20, default="")  # BEST! / WORST! 칭호
 
     def __str__(self):
         return f"{self.user.lol_id} {self.champion} {self.result}"

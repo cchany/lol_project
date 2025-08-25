@@ -1,0 +1,335 @@
+{% load static %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>패치노트 - ACE Stat's</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { 
+            background: #23232b; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            color: #e0e0e0; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 32px auto; 
+            padding: 0 24px; 
+        }
+        
+        .page-title {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .patchnote-section {
+            background: #2a2a35;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 6px solid #1976d2;
+        }
+        
+        .patchnote-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #3a3a45;
+        }
+        
+        .version-badge {
+            background: #1976d2;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .date-badge {
+            background: #424242;
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.9em;
+        }
+        
+        .patchnote-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+        }
+        
+        .change-category {
+            margin-bottom: 24px;
+        }
+        
+        .category-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .change-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .change-item {
+            background: #32323e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4caf50;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .change-item.buff {
+            border-left-color: #4caf50;
+        }
+        
+        .change-item.nerf {
+            border-left-color: #f44336;
+        }
+        
+        .change-item.adjustment {
+            border-left-color: #ff9800;
+        }
+        
+        .change-item.bugfix {
+            border-left-color: #9c27b0;
+        }
+        
+        .change-icon {
+            font-size: 1.2em;
+            margin-top: 2px;
+        }
+        
+        .change-icon.buff { color: #4caf50; }
+        .change-icon.nerf { color: #f44336; }
+        .change-icon.adjustment { color: #ff9800; }
+        .change-icon.bugfix { color: #9c27b0; }
+        
+        .change-content {
+            flex: 1;
+        }
+        
+        .change-title {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .change-description {
+            color: #bdbdbd;
+            line-height: 1.6;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1976d2;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-bottom: 32px;
+        }
+        
+        .back-btn:hover {
+            background: #1565c0;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .patchnote-section { padding: 20px; }
+            .page-title { font-size: 2em; }
+            .patchnote-title { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            메인으로 돌아가기
+        </a>
+        
+        <h1 class="page-title">
+            <i class="fas fa-book-open"></i>
+            패치노트
+        </h1>
+        
+        <!-- 최신 패치 -->
+        <div class="patchnote-section">
+            <div class="patchnote-header">
+                <span class="version-badge">v2.1.0</span>
+                <span class="date-badge">2025-08-25</span>
+                <h2 class="patchnote-title">Total Score 시스템 개선 및 칭호 시스템 추가</h2>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-star" style="color: #ffd600;"></i>
+                    새로운 기능
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">BEST! / WORST! 칭호 시스템</div>
+                            <div class="change-description">
+                                승리팀 MVP는 BEST! 칭호, 패배팀 최하위는 WORST! 칭호를 받게 됩니다.
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">패치노트 페이지</div>
+                            <div class="change-description">
+                                게임 업데이트 내용을 확인할 수 있는 패치노트 페이지가 추가되었습니다.
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-balance-scale" style="color: #ff9800;"></i>
+                    시스템 조정
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item adjustment">
+                        <i class="fas fa-edit change-icon adjustment"></i>
+                        <div class="change-content">
+                            <div class="change-title">Total Score 계산 방식 개선</div>
+                            <div class="change-description">
+                                승리팀👑: 1~5위 순서대로 +5, +4, +3, +2, +1점<br>
+                                패배팀👺: 1~5위 순서대로 -1, -2, -3, -4, -5점<br>
+                                기존의 단순 승패 점수에서 팀 내 순위별 차등 점수로 변경<br>
+                                1위 플레이어는 추가로 +2점을 받습니다.<br>
+                                연승/연패 추가 점수🔥: 3연승 +1점, 4연승 이상 +2점 / 3연패 -1점, 4연패 이상 -2점
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 이전 패치 -->
+        <div class="patchnote-section">
+            <div class="patchnote-header">
+                <span class="version-badge">v2.0.0</span>
+                <span class="date-badge">2025-08-18</span>
+                <h2 class="patchnote-title">AI 점수 시스템 및 랭킹 시스템 도입</h2>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-robot" style="color: #9c27b0;"></i>
+                    AI 시스템
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">AI 성과 평가 시스템</div>
+                            <div class="change-description">
+                                게임 내 성과를 AI가 자동으로 평가하여 점수를 부여합니다.
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-trophy" style="color: #ffd600;"></i>
+                    랭킹 시스템
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">팀 내 순위 시스템</div>
+                            <div class="change-description">
+                                AI 점수를 기준으로 팀 내에서의 순위를 결정합니다.
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 초기 버전 -->
+        <div class="patchnote-section">
+            <div class="patchnote-header">
+                <span class="version-badge">v1.0.0</span>
+                <span class="date-badge">2025-08-04</span>
+                <h2 class="patchnote-title">ACE Stat's 첫 출시</h2>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-rocket" style="color: #4caf50;"></i>
+                    기본 기능
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">게임 결과 기록 시스템</div>
+                            <div class="change-description">
+                                리그 오브 레전드 게임 결과를 기록하고 관리할 수 있습니다.
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">유저 전적 검색</div>
+                            <div class="change-description">
+                                소환사명으로 유저의 전적을 검색하고 통계를 확인할 수 있습니다.
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">챔피언별 통계</div>
+                            <div class="change-description">
+                                플레이한 챔피언별 승률과 성과를 확인할 수 있습니다.
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

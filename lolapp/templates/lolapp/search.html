@@ -26,6 +26,8 @@
         .champion-winrate.red { color: #ef5350; }
         .champion-winrate.green { color: #81c784; }
         .champion-games { margin-left: 12px; color: #bdbdbd; }
+        .best-title { color: #ffd600 !important; }
+        .worst-title { color: #ffd600 !important; }
         .team-list { background: #23232b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; }
         .team-user { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
         .team-user:last-child { border-bottom: none; }
@@ -218,7 +220,7 @@
                                 <div class="game-kda" style="display:flex; align-items:center; gap:4px; font-size:1.1em; font-weight:bold;">
                                     <span>{{ game.kill }}</span> / <span class="death">{{ game.death }}</span> / <span>{{ game.assist }}</span> <span class="score">{{ game.kda }} 평점</span>
                                     {% if game.rank_title %}
-                                    <span style="font-size:0.8em; color:#fff; margin-left:4px; font-weight:bold;">{{ game.rank_title }}</span>
+                                    <span style="font-size:0.8em; color:#fff; margin-left:4px; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);" class="{% if game.rank_title == 'BEST!' %}best-title{% else %}worst-title{% endif %}">{{ game.rank_title }}</span>
                                     {% endif %}
                                 </div>
                                 <div style="display:flex; gap:12px; margin-top:4px; font-size:0.9em; color:#bdbdbd;">

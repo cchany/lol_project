@@ -426,8 +426,12 @@ def search(request):
                 for teammate in team_gamedata:
                     if teammate.ai_score > gd.ai_score:
                         team_rank += 1
-                # 팀 내 순위 타이틀 계산 (예시)
-                rank_title = 'BEST!' if gd.rank == '1' else ''
+                # 팀 내 순위 타이틀 계산
+                rank_title = ''
+                if gd.result == 'win' and gd.rank == '1':
+                    rank_title = 'BEST!'
+                elif gd.result == 'lose' and gd.rank == '5':
+                    rank_title = 'WORST!'
                 # 해당 게임의 모든 유저/챔피언 리스트
                 all_gamedata = GameData.objects.filter(game=gd.game).select_related('user')
                 user_list = []
@@ -991,14 +995,15 @@ def upload_save(request):
                     prev_score = last_gamedata.total_score if last_gamedata else 100
                     # rank는 문자열 '1'~'5'
                     rank_str = idx_to_rank.get(idx, '')
-                    # 점수 계산
+                    # 점수 계산 - RANK 순위에 따라 점수 차등 적용
                     if result == 'win':
-                        if rank_str == '1':
-                            new_score = prev_score + 7
-                        else:
-                            new_score = prev_score + 5
+                        # 승리팀: 1~5위 순서대로 +5, +4, +3, +2, +1
+                        rank_bonus = 6 - int(rank_str) if rank_str.isdigit() else 0
+                        new_score = prev_score + rank_bonus
                     else:  # lose
-                        new_score = prev_score - 5
+                        # 패배팀: 1~5위 순서대로 -1, -2, -3, -4, -5
+                        rank_penalty = -int(rank_str) if rank_str.isdigit() else -3
+                        new_score = prev_score + rank_penalty
                     # 연승/연패 streak 계산
                     recent_results = list(GameData.objects.filter(user=user_obj).order_by('-id').values_list('result', flat=True)[:3])
                     streak = 1
@@ -1019,6 +1024,13 @@ def upload_save(request):
                         elif streak >= 4:
                             bonus = -2
                     new_score += bonus
+                    
+                    # BEST! / WORST! 칭호 결정
+                    title = ""
+                    if result == 'win' and rank_str == '1':
+                        title = "BEST!"
+                    elif result == 'lose' and rank_str == '5':
+                        title = "WORST!"
                     GameData.objects.create(
                         game=game,
                         user=user_obj,
@@ -1034,7 +1046,8 @@ def upload_save(request):
                         placement=p['placement'],
                         kda_ratio=p['kda_ratio'],
                         rank=rank_str,
-                        total_score=new_score
+                        total_score=new_score,
+                        title=title
                     )
             return JsonResponse({'success': True})
         except Exception as e:
@@ -1184,3 +1197,7 @@ def edit_game(request, game_id):
         'champions': champions,
         'lines': lines,
     })
+
+def patchnote(request):
+    """패치노트 페이지를 표시하는 뷰"""
+    return render(request, 'lolapp/patchnote.html')

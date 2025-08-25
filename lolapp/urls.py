@@ -8,6 +8,7 @@ urlpatterns = [
     path('rank/', views.rank, name='rank'),
     path('upload/', views.upload, name='upload'),
     path('database/', views.database, name='database'),
+    path('patchnote/', views.patchnote, name='patchnote'),
 ]
 
 urlpatterns += [
