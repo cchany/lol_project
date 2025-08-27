@@ -1031,12 +1031,17 @@ def upload_save(request):
                             bonus = -2
                     new_score += bonus
                     
-                    # BEST! / WORST! 칭호 결정
+                    # BEST! / WORST! 칭호 결정 및 추가 점수
                     title = ""
+                    bonus_score = 0
                     if result == 'win' and rank_str == '1':
                         title = "BEST!"
+                        bonus_score = 2  # BEST 선정 시 +2점
                     elif result == 'lose' and rank_str == '5':
                         title = "WORST!"
+                        # WORST 선정 시 추가 점수는 없음
+                    
+                    new_score += bonus_score
                     GameData.objects.create(
                         game=game,
                         user=user_obj,
