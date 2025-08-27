@@ -134,7 +134,7 @@
         <!-- 1. 순위표 -->
         <div class="tab-content active">
             <div class="section-title">USER SCORE BOARD</div>
-            <table style="margin:0 auto; min-width:700px; background:#222; color:#fff; border-radius:10px; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
+            <table style="margin:0 auto; min-width:800px; background:#222; color:#fff; border-radius:10px; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
                 <tr style="background:#23232b;">
                     <th style="padding:12px 18px; text-align:center;">RANK</th>
                     <th style="padding:12px 18px; text-align:center;">USER</th>
@@ -144,6 +144,8 @@
                     <th style="padding:12px 18px; text-align:center;">WIN RATE</th>
                     <th style="padding:12px 18px; text-align:center;">KDA</th>
                     <th style="padding:12px 18px; text-align:center;">SCORE</th>
+                    <th style="padding:12px 18px; text-align:center;">BEST</th>
+                    <th style="padding:12px 18px; text-align:center;">WORST</th>
                 </tr>
                 {% for user in user_stats %}
                     <tr
@@ -180,9 +182,23 @@
                       <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.score }}</td>
+                      <td style="text-align:center; padding:10px 0;">
+                        {% if user.best_count > 0 %}
+                          <span style="color: #4caf50; font-weight: bold;">{{ user.best_count }}</span>
+                        {% else %}
+                          <span style="color: #888;">0</span>
+                        {% endif %}
+                      </td>
+                      <td style="text-align:center; padding:10px 0;">
+                        {% if user.worst_count > 0 %}
+                          <span style="color: #f44336; font-weight: bold;">{{ user.worst_count }}</span>
+                        {% else %}
+                          <span style="color: #888;">0</span>
+                        {% endif %}
+                      </td>
                     </tr>
                 {% empty %}
-                <tr><td colspan="8" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
+                <tr><td colspan="10" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
                 {% endfor %}
             </table>
         </div>

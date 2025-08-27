@@ -179,6 +179,10 @@ def get_rank_user_stats():
         last_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-game__id').first()
         total_score = last_gamedata.total_score if last_gamedata else 100
         
+        # BEST와 WORST 선정 횟수 계산
+        best_count = GameData.objects.filter(user__in=user_lol_ids, title='BEST!').count()
+        worst_count = GameData.objects.filter(user__in=user_lol_ids, title='WORST!').count()
+        
         user_stats.append({
             'name': s['user__name'],
             'total': total,
@@ -190,6 +194,8 @@ def get_rank_user_stats():
             'cs': s['cs_sum'] or 0,
             'ai_score': round(s['ai_score_avg'] or 0, 2),
             'score': int(total_score),
+            'best_count': best_count,
+            'worst_count': worst_count,
         })
     user_stats = sorted(user_stats, key=lambda x: (-x['score'], -x['winrate'], -x['kda']))
     real_user_stats = [u for u in user_stats if u['total'] > 0]
@@ -1110,6 +1116,8 @@ def database(request):
     
     for game in page_obj:
         game.champion_img = get_champion_img_name(game.champion)
+        # KDA 계산 추가
+        game.kda = round((game.kill + game.assist) / (game.death if game.death != 0 else 1), 2)
         
         if current_game_id != game.game.id:
             if current_group:
