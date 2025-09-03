@@ -9,13 +9,13 @@
     <title>경기결과입력</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { background: #23232b; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #1a1a1a; font-family: 'Segoe UI', Arial, sans-serif; }
         .flex { display: flex; gap: 32px; justify-content: center; margin-top: 40px; }
         .champion-list { width: 290px; background: #222; color: #fff; border-radius: 8px; padding: 12px; min-height: 400px; }
         .table-wrap { background: #fff; border-radius: 10px; padding: 18px; max-width: 800px; }
         table { border-collapse: collapse; margin-top: 30px; min-width: 800px; }
         th, td { border: 1px solid #bdbdbd; padding: 4px 2px; text-align: center; }
-        th { background: #23232b; color: #fff; font-size: 0.98em; }
+        th { background: #1a1a1a; color: #fff; font-size: 0.98em; }
         .icon-cell { /* width: 38px; */ }
         select { padding: 2px 4px; }
         .champion-cell-img {
@@ -34,7 +34,7 @@
 <body>
 <form method="post" action="" autocomplete="off">
 {% csrf_token %}
-<div style="max-width:800px; margin:0 auto 24px auto; background:#23232b; border-radius:10px; padding:18px 24px 12px 24px; color:#fff;">
+<div style="max-width:800px; margin:0 auto 24px auto; background:#1a1a1a; border-radius:10px; padding:18px 24px 12px 24px; color:#fff;">
     <div style="font-weight:bold; font-size:1.08em; margin-bottom:8px;">복사한 게임 결과 텍스트 붙여넣기</div>
     <textarea id="bulk-textarea" rows="12" style="width:100%; border-radius:8px; border:1px solid #bbb; padding:10px; font-size:1em; margin-bottom:8px; resize:vertical; background:#181824; color:#fff;"></textarea>
     <button type="button" id="analyze-btn" style="background:#4a6cf7; color:#fff; border:none; border-radius:6px; padding:8px 28px; font-size:1em; font-weight:bold; cursor:pointer; margin-bottom:8px;">분석</button>
