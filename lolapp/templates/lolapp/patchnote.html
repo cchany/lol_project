@@ -120,6 +120,10 @@
             border-left-color: #9c27b0;
         }
         
+        .change-item.new {
+            border-left-color: #00bcd4;
+        }
+        
         .change-icon {
             font-size: 1.2em;
             margin-top: 2px;
@@ -129,6 +133,7 @@
         .change-icon.nerf { color: #f44336; }
         .change-icon.adjustment { color: #ff9800; }
         .change-icon.bugfix { color: #9c27b0; }
+        .change-icon.new { color: #00bcd4; }
         
         .change-content {
             flex: 1;
@@ -184,6 +189,155 @@
         </h1>
         
         <!-- 최신 패치 -->
+        <div class="patchnote-section">
+            <div class="patchnote-header">
+                <span class="version-badge">v3.0.0</span>
+                <span class="date-badge">2025-09-10</span>
+                <h2 class="patchnote-title">LP 시스템 도입 및 랭킹 시스템 대폭 개편</h2>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-trophy" style="color: #ffd600;"></i>
+                    새로운 랭킹 시스템
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item new">
+                        <i class="fas fa-star change-icon new"></i>
+                        <div class="change-content">
+                            <div class="change-title">LP (League Points) 시스템 도입</div>
+                            <div class="change-description">
+                                기존 점수제 랭킹을 티어 시스템으로 완전 교체했습니다.<br>
+                                • 나락계 (0~99 LP)<br>
+                                • 중간계 (100~199 LP)<br>
+                                • 천상계 (200~299 LP)
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item new">
+                        <i class="fas fa-balance-scale change-icon new"></i>
+                        <div class="change-content">
+                            <div class="change-title">공정한 매치 시스템</div>
+                            <div class="change-description">
+                                로지스틱 기대승률을 기반으로 한 공정한 LP 변동 시스템을 도입했습니다.<br>
+                                • 두 팀의 LP 평균이 동급인 매치: ±25 LP<br>
+                                • 두 팀의 LP 평균이 25점 차이: 강팀 승 +20, 약팀 패 -20, 업셋 시 +26<br>
+                                • 두 팀의 LP 평균이 50점 차이: 강팀 승 +15, 약팀 패 -15, 업셋 시 +27<br>
+                                • 두 팀의 LP 평균이 75점 차이: 강팀 승 +10, 약팀 패 -10, 업셋 시 +30<br>
+                                • 두 팀의 LP 평균이 100점+ 차이: 강팀 승 +1, 약팀 업셋 시 +30
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item new">
+                        <i class="fas fa-shield-alt change-icon new"></i>
+                        <div class="change-content">
+                            <div class="change-title">티어 경계 보호 시스템</div>
+                            <div class="change-description">
+                                티어 경계에서 1패 보호 시스템을 도입했습니다.<br>
+                                • 100점 경계: 100점 경계에서서 패배 시 100점으로 보호, 그 후 또 패배 시 강등<br>
+                                • 200점 경계: 200점 경계에서 패배 시 200점으로 보호, 그 후 또 패배 시 강등<br>
+                                • 승급은 즉시, 강등은 1패 보호로 공정성과 희망을 모두 제공
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-database" style="color: #4caf50;"></i>
+                    데이터 구조 개선
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">GameData 중심 LP 관리</div>
+                            <div class="change-description">
+                                LP를 GameData 테이블에서 관리하도록 변경하여 데이터 일관성을 향상시켰습니다.<br>
+                                • lp_before: 경기 전 LP<br>
+                                • lp_after: 경기 후 LP<br>
+                                • lp_change: LP 변화량<br>
+                                • User 모델은 건드리지 않고 기존 구조 유지
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item buff">
+                        <i class="fas fa-sync change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">실시간 LP 계산</div>
+                            <div class="change-description">
+                                유저의 현재 LP를 GameData에서 실시간으로 계산하여 정확성을 보장합니다.<br>
+                                • 최신 경기 결과를 기반으로 한 정확한 LP 표시<br>
+                                • LP 변화량 추적 및 히스토리 관리
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-palette" style="color: #9c27b0;"></i>
+                    UI/UX 개선
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item buff">
+                        <i class="fas fa-plus change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">티어 배지 시스템</div>
+                            <div class="change-description">
+                                랭킹 페이지에 티어별 배지를 추가하여 시각적 구분을 명확하게 했습니다.<br>
+                                • 나락계: 🔥 배지<br>
+                                • 중간계: ⚔️ 배지<br>
+                                • 천상계: 👑 배지
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item buff">
+                        <i class="fas fa-chart-line change-icon buff"></i>
+                        <div class="change-content">
+                            <div class="change-title">LP 변화량 표시</div>
+                            <div class="change-description">
+                                경기 결과에 LP 변화량을 표시하여 플레이어의 성과를 명확하게 확인할 수 있습니다.<br>
+                                • 경기 후 LP 변화량 표시<br>
+                                • 업셋 경기 시 특별 표시<br>
+                                • 기대승률 및 팀 평균 LP 표시
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="change-category">
+                <h3 class="category-title">
+                    <i class="fas fa-bug" style="color: #9c27b0;"></i>
+                    버그 수정
+                </h3>
+                <ul class="change-list">
+                    <li class="change-item bugfix">
+                        <i class="fas fa-wrench change-icon bugfix"></i>
+                        <div class="change-content">
+                            <div class="change-title">순환 import 문제 해결</div>
+                            <div class="change-description">
+                                LP 시스템과 모델 간의 순환 import 문제를 해결하여 안정성을 향상시켰습니다.
+                            </div>
+                        </div>
+                    </li>
+                    <li class="change-item bugfix">
+                        <i class="fas fa-wrench change-icon bugfix"></i>
+                        <div class="change-content">
+                            <div class="change-title">강등 시스템 정상화</div>
+                            <div class="change-description">
+                                1패 보호 후 강등이 정상적으로 작동하지 않던 문제를 수정했습니다.
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 이전 패치 -->
         <div class="patchnote-section">
             <div class="patchnote-header">
                 <span class="version-badge">v2.3.0</span>

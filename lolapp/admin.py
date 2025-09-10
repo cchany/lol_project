@@ -16,7 +16,7 @@ class GameAdmin(admin.ModelAdmin):
 class GameDataAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'game', 'user', 'result', 'champion', 'line',
-        'kill', 'death', 'assist','cs', 'damage', 'kda_ratio', 'ai_score', 'placement', 'rank','total_score', 'title'
+        'kill', 'death', 'assist','cs', 'damage', 'kda_ratio', 'ai_score', 'placement', 'rank','total_score', 'title', 'lp_before', 'lp_after', 'lp_change'
     ]
     ordering = ['id']
     list_filter = ['result', 'line', 'champion']
@@ -24,3 +24,4 @@ class GameDataAdmin(admin.ModelAdmin):
 @admin.register(Champion)
 class ChampionAdmin(admin.ModelAdmin):
     list_display = ['champ_id', 'name']
+

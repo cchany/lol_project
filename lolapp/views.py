@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import User, Champion, GameData, Game
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Count, Sum, Avg, Q, F
+from django.db.models import Count, Sum, Avg, Q, F, Max
 from django.http import HttpRequest
 from collections import defaultdict
 from django.core.paginator import Paginator
@@ -13,7 +13,13 @@ import json
 import random
 import string
 
-# OCR, 이미지, crop, 세션 관련 코드 모두 삭제
+# LP 시스템 import 추가
+from .lp_system import (
+    get_tier_from_lp, 
+    process_game_lp_changes, 
+    get_game_summary,
+    LP_INIT
+)
 
 # 챔피언 이름 → 역할군 매핑
 champion_name_to_role = {
@@ -145,9 +151,9 @@ def generate_unique_key():
     rand = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     return f"{now}_{rand}"
 
-# 유저 순위표 계산 함수 (rank, main에서 공통 사용)
-def get_rank_user_stats():
-    # 같은 이름의 유저들을 그룹화하여 처리
+# LP 기반 유저 순위표 계산 함수 (기존 get_rank_user_stats 대체)
+def get_lp_rank_user_stats():
+    """LP 기반 유저 순위표 계산"""
     stats = (
         GameData.objects.values('user__name')
         .annotate(
@@ -162,6 +168,7 @@ def get_rank_user_stats():
             ai_score_avg=Avg('ai_score'),
         )
     )
+    
     user_stats = []
     for s in stats:
         total = s['total']
@@ -173,11 +180,14 @@ def get_rank_user_stats():
         a_sum = s['a_sum'] or 0
         kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
         
-        # 같은 이름의 유저들 중 가장 최근 게임의 total_score 사용
+        # 같은 이름의 유저들 중 가장 높은 LP 사용 (GameData에서 계산)
         same_name_users = User.objects.filter(name=s['user__name'])
         user_lol_ids = list(same_name_users.values_list('lol_id', flat=True))
-        last_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-game__id').first()
-        total_score = last_gamedata.total_score if last_gamedata else 100
+        
+        # 가장 최근 게임의 lp_after 사용
+        latest_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-id').first()
+        current_lp = latest_gamedata.lp_after if latest_gamedata else LP_INIT
+        tier = get_tier_from_lp(current_lp)
         
         # BEST와 WORST 선정 횟수 계산
         best_count = GameData.objects.filter(user__in=user_lol_ids, title='BEST!').count()
@@ -193,26 +203,32 @@ def get_rank_user_stats():
             'damage': s['damage_sum'] or 0,
             'cs': s['cs_sum'] or 0,
             'ai_score': round(s['ai_score_avg'] or 0, 2),
-            'score': int(total_score),
+            'lp': int(current_lp),
+            'tier': tier,
             'best_count': best_count,
             'worst_count': worst_count,
         })
-    user_stats = sorted(user_stats, key=lambda x: (-x['score'], -x['winrate'], -x['kda']))
+    
+    # LP 기준으로 정렬 (LP 높은 순, 동점 시 승률, KDA 순)
+    user_stats = sorted(user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
     real_user_stats = [u for u in user_stats if u['total'] > 0]
     return real_user_stats
 
 def main(request):
-    real_user_stats = get_rank_user_stats()[:5]
+    real_user_stats = get_lp_rank_user_stats()[:5]
     # 챔피언 한글명 → 영문 champ_id 매핑
     champion_name_map = {c.name: c.champ_id for c in Champion.objects.all()}
+    
     # 최근 3경기 데이터
     recent_games = Game.objects.order_by('-id')[:5]
     recent_games_rows = []
+    
     for game in recent_games:
         game_gamedata = GameData.objects.filter(game=game).select_related('user')
         team_kills = {'win': 0, 'lose': 0}
         for row in game_gamedata:
             team_kills[row.result] += row.kill
+            
         rows = []
         for row in game_gamedata:
             kda = (row.kill + row.assist) / (row.death if row.death != 0 else 1)
@@ -232,14 +248,18 @@ def main(request):
                 'ai_score': int(row.ai_score),
                 'rank': row.rank,
                 'placement': row.placement,
+                'lp_change': row.lp_change,  # LP 변화량 추가
+                'lp_after': row.lp_after,   # 경기 후 LP 추가
             })
         recent_games_rows.append({'date': game.date, 'rows': rows})
+    
     return render(request, 'lolapp/main.html', {
         'real_user_stats': real_user_stats,
         'recent_games_rows': recent_games_rows,
     })
 
 def search(request):
+    """LP 시스템 기반 검색 뷰"""
     query = request.GET.get('name', '')
     user = None
     champion_stats = []
@@ -273,45 +293,29 @@ def search(request):
                 )
             else:
                 # 같은 이름의 유저가 없는 경우
-                user = None
-                champion_stats = []
-                stats = None
-                line_counts = None
-                max_line = 1
-                line_bars = []
-                win_percent = 0
-                lose_percent = 0
-                game_records = []
-                team_users = []
-                score_graph_data = []
-                final_score = 100
-                graph_width = 200
-                recent_scores = []
-                page_obj = None
-                paginator = None
                 return render(request, 'lolapp/search.html', {
                     'query': query,
-                    'user': user,
-                    'champion_stats': champion_stats,
-                    'team_users': team_users,
-                    'game_records': game_records,
-                    'score_graph_data': score_graph_data,
-                    'final_score': final_score,
-                    'graph_width': graph_width,
-                    'stats': stats,
-                    'line_counts': line_counts,
-                    'max_line': max_line,
-                    'line_bars': line_bars,
-                    'win_percent': win_percent,
-                    'lose_percent': lose_percent,
-                    'page_obj': page_obj,
+                    'user': None,
+                    'champion_stats': [],
+                    'team_users': [],
+                    'game_records': [],
+                    'score_graph_data': [],
+                    'final_score': 100,
+                    'graph_width': 200,
+                    'stats': None,
+                    'line_counts': None,
+                    'max_line': 1,
+                    'line_bars': [],
+                    'win_percent': 0,
+                    'lose_percent': 0,
+                    'page_obj': None,
                     'is_paginated': False,
                     'page_number': 1,
                     'page_range': [],
-                    'recent_scores': recent_scores,
+                    'recent_scores': [],
                 })
-            # 1. 챔피언별 전적 집계 (이미 위에서 정의됨)
-            # KDA 계산 및 승률
+            
+            # 1. 챔피언별 전적 집계
             champion_stats = []
             for c in champ_qs:
                 death = c['death'] if c['death'] else 1
@@ -335,7 +339,7 @@ def search(request):
             # 게임 수로 정렬 (가장 많이 플레이한 순서)
             champion_stats = sorted(champion_stats, key=lambda x: x['games'], reverse=True)
 
-            # 전체 요약
+            # 전체 요약 (LP 기반)
             qs = GameData.objects.filter(user__in=user_lol_ids)
             total = qs.count()
             win = qs.filter(result='win').count()
@@ -344,14 +348,13 @@ def search(request):
             d_sum = qs.aggregate(d=Sum('death'))['d'] or 0
             a_sum = qs.aggregate(a=Sum('assist'))['a'] or 0
             kda = round((k_sum + a_sum) / (d_sum if d_sum else 1), 2) if total else 0
-            # Total Score 계산 (rank 기준과 동일하게, 마지막 게임의 total_score 사용)
-            last_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-game__id').first()
-            if last_gamedata and last_gamedata.total_score > 0:
-                total_score = round(last_gamedata.total_score, 2)
-            else:
-                total_score = 100.0
-            avg_total_score = total_score
-            # 이하 기존 stats 생성부에서 avg_total_score를 사용
+            
+            # 현재 LP 및 티어 (GameData에서 계산)
+            user_lol_ids = list(users_with_same_name.values_list('lol_id', flat=True))
+            latest_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-id').first()
+            current_lp = latest_gamedata.lp_after if latest_gamedata else LP_INIT
+            tier = get_tier_from_lp(current_lp)
+            
             kill_avg = round(k_sum / total, 1) if total else 0
             death_avg = round(d_sum / total, 1) if total else 0
             assist_avg = round(a_sum / total, 1) if total else 0
@@ -363,21 +366,24 @@ def search(request):
                 'death': d_sum,
                 'assist': a_sum,
                 'kda': kda,
-                'total_score': avg_total_score,
+                'lp': int(current_lp),
+                'tier': tier,
                 'kill_avg': kill_avg,
                 'death_avg': death_avg,
                 'assist_avg': assist_avg,
             }
+            
             # 도넛차트용 승/패 비율
             win_percent = int((win / total) * 100) if total else 0
             lose_percent = 100 - win_percent if total else 0
+            
             # 선호 포지션(라인별 게임 수)
             line_keys = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
             line_labels = ['탑', '정글', '미드', '원딜', '서폿']
-            line_icons = ['🛡️', '🌿', '⚔️', '🏹', '✨']
+            line_icons = ['🐉', '🌿', '⚔️', '🏹', '✨']
             line_counts = {}
             for line in line_keys:
-                line_counts[line] = GameData.objects.filter(user=user, line=line).count()
+                line_counts[line] = GameData.objects.filter(user__in=user_lol_ids, line=line).count()
             max_line = max(line_counts.values()) if line_counts else 1
             line_bars = []
             for line, icon in zip(line_keys, line_icons):
@@ -386,7 +392,7 @@ def search(request):
                 color = '#1976d2' if count == max_line and count > 0 else '#444'
                 line_bars.append({'height': height, 'color': color, 'icon': icon, 'label': line_labels[line_keys.index(line)]})
 
-            # 2. 최근 게임 기록 (opponent: 맞라인 상대)
+            # 2. 최근 게임 기록 (LP 기반)
             game_qs = (
                 GameData.objects.filter(user__in=user_lol_ids)
                 .select_related('game')
@@ -397,6 +403,7 @@ def search(request):
             paginator = Paginator(game_qs, 20)
             page_obj = paginator.get_page(page_number)
             game_records = []
+            
             for gd in page_obj:
                 # 맞라인 상대 찾기: 같은 게임, 나와 다른 result, 같은 line
                 opponent_gd = GameData.objects.filter(
@@ -413,31 +420,20 @@ def search(request):
                 team_total_kill = sum(tgd.kill for tgd in team_gamedata)
                 kp = (gd.kill + gd.assist) / team_total_kill if team_total_kill > 0 else 0
 
-                # Game Score 계산
-                # champion = gd.champion
-                # role = champion_name_to_role.get(champion, "dealer")
-                # game_score = calc_game_score(gd.kill, gd.assist, gd.death, kp, role)
-
-                # Rank Score 계산: DB에 저장된 rank_score 값
-                # score_change = gd.rank_score
-
-                # 점수 변동값 계산 (이 게임에서의 total_score 변화량)
-                prev_gamedata = GameData.objects.filter(user__in=user_lol_ids, game__id__lt=gd.game.id).order_by('-game__id').first()
-                prev_score = prev_gamedata.total_score if prev_gamedata else 100
-                score_change = gd.total_score - prev_score
-
                 # 팀 내 순위 계산 (ai_score 기준)
                 team_gamedata = GameData.objects.filter(game=gd.game, result=gd.result)
                 team_rank = 1
                 for teammate in team_gamedata:
                     if teammate.ai_score > gd.ai_score:
                         team_rank += 1
+                
                 # 팀 내 순위 타이틀 계산
                 rank_title = ''
                 if gd.result == 'win' and gd.rank == '1':
                     rank_title = 'BEST!'
                 elif gd.result == 'lose' and gd.rank == '5':
                     rank_title = 'WORST!'
+                
                 # 해당 게임의 모든 유저/챔피언 리스트
                 all_gamedata = GameData.objects.filter(game=gd.game).select_related('user')
                 user_list = []
@@ -450,11 +446,13 @@ def search(request):
                         'champion_img': champ_img,
                         'result': ugd.result,
                     })
+                
                 # 해당 게임의 승리팀/패배팀 유저/챔피언 리스트
                 win_gamedata = GameData.objects.filter(game=gd.game, result='win').select_related('user')[:5]
                 lose_gamedata = GameData.objects.filter(game=gd.game, result='lose').select_related('user')[:5]
                 win_users = []
                 lose_users = []
+                
                 for ugd in win_gamedata:
                     champ_obj = Champion.objects.filter(name=ugd.champion).first()
                     champ_img = champ_obj.champ_id if champ_obj else ugd.champion
@@ -468,6 +466,7 @@ def search(request):
                         'assist': ugd.assist,
                         'ai_score': int(ugd.ai_score),
                     })
+                
                 for ugd in lose_gamedata:
                     champ_obj = Champion.objects.filter(name=ugd.champion).first()
                     champ_img = champ_obj.champ_id if champ_obj else ugd.champion
@@ -481,6 +480,7 @@ def search(request):
                         'assist': ugd.assist,
                         'ai_score': int(ugd.ai_score),
                     })
+                
                 # 라인별 ai_score 비교: 더 높은 쪽에 ai_better=True
                 for i in range(min(len(win_users), len(lose_users))):
                     win_ai = win_users[i]['ai_score']
@@ -494,6 +494,7 @@ def search(request):
                     else:
                         win_users[i]['ai_emoji'] = ''
                         lose_users[i]['ai_emoji'] = ''
+                
                 game_records.append({
                     'date': gd.game.date,
                     'game_id': gd.game.id,
@@ -507,8 +508,8 @@ def search(request):
                     'champion_img': champion_img,
                     'kp': round(kp * 100, 1),
                     'ai_score': int(gd.ai_score),
-                    'score_change': int(score_change),
-                    'after_score': int(gd.total_score),
+                    'lp_change': gd.lp_change,  # LP 변화량
+                    'lp_after': gd.lp_after,   # 경기 후 LP
                     'team_rank': team_rank,
                     'rank_title': rank_title,
                     'user_list': user_list,
@@ -517,42 +518,42 @@ def search(request):
                     'placement': gd.placement,
                 })
             
-            # 점수 변동 그래프 데이터 생성 (전체 게임 기반)
+            # LP 그래프 데이터 생성 (전체 게임 기반)
             score_graph_data = []
-            current_score = 100  # 시작 점수
+            current_lp = LP_INIT  # 시작 LP
 
-            # y값 변환 함수: 100점이 y=30(중앙), 120점이 y=0, 80점이 y=60
-            score_range = 40
+            # y값 변환 함수: 150점이 y=30(중앙), 200점이 y=0, 100점이 y=60
+            score_range = 50
             center_y = 30
-            def score_to_y(score):
-                return center_y - (score - 100) * (center_y / score_range)
+            def score_to_y(lp):
+                return center_y - (lp - 150) * (center_y / score_range)
 
-            # 전체 게임 데이터로 누적 점수 변동 그래프 생성
+            # 전체 게임 데이터로 누적 LP 변동 그래프 생성
             all_games = GameData.objects.filter(user__in=user_lol_ids).order_by('game__id')
-            # 시작점 (y축과 닿아있는 100점)
+            # 시작점 (y축과 닿아있는 150점)
             score_graph_data.append({
-                'score': 100,
+                'score': LP_INIT,
                 'result': 'start',
                 'x': 0,
-                'y': score_to_y(100)
+                'y': score_to_y(LP_INIT)
             })
             temp_data = []
             game_count = all_games.count()
             x_spacing = max(10, min(20, 200 // (game_count + 1)))
             for i, gd in enumerate(all_games):
                 score_graph_data.append({
-                    'score': gd.total_score,
+                    'score': gd.lp_after,
                     'result': gd.result,
                     'x': (i + 1) * x_spacing,
-                    'y': score_to_y(gd.total_score)
+                    'y': score_to_y(gd.lp_after)
                 })
             score_graph_data = sorted(score_graph_data, key=lambda x: x['x'])
             
             # 그래프 너비 계산 (템플릿에서 사용)
             graph_width = (len(score_graph_data) + 1) * 20
             
-            # 최종 점수 계산
-            final_score = current_score if score_graph_data else 100
+            # 최종 LP 계산
+            final_lp = current_lp if score_graph_data else LP_INIT
 
             # 3. 같은 팀 유저 (전체 데이터 누적, 같은 game+result, 나 제외)
             team_users = []
@@ -583,11 +584,11 @@ def search(request):
                 v['winrate'] = int((v['win'] / v['games']) * 100) if v['games'] else 0
                 team_users.append(v)
 
-            # 최근 20경기 total_score, 날짜, game_id 리스트 생성 (그래프용)
+            # 최근 20경기 LP, 날짜, game_id 리스트 생성 (그래프용)
             recent_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-game__id')[:20]
             recent_scores = [
                 {
-                    'total_score': gd.total_score,
+                    'lp': gd.lp_after,
                     'date': gd.game.date if isinstance(gd.game.date, str)
                             else gd.game.date.strftime('%Y-%m-%d') if gd.game and gd.game.date else '',
                     'game_id': gd.game.id if gd.game else '',
@@ -609,7 +610,7 @@ def search(request):
             game_records = []
             team_users = []
             score_graph_data = []
-            final_score = 100
+            final_lp = LP_INIT
             graph_width = 200
             recent_scores = []
             page_obj = None
@@ -622,7 +623,7 @@ def search(request):
         'team_users': team_users,
         'game_records': game_records,
         'score_graph_data': score_graph_data if query else [],
-        'final_score': final_score if query else 100,
+        'final_lp': final_lp if query else LP_INIT,
         'graph_width': graph_width if query else 200,
         'stats': stats if query else None,
         'line_counts': line_counts if query else None,
@@ -640,10 +641,11 @@ def search(request):
     return render(request, 'lolapp/search.html', context)
 
 def rank(request):
-    # 1. 전체 유저 순위
-    user_stats = get_rank_user_stats()
+    """LP 기반 랭킹 뷰"""
+    # 1. LP 기반 전체 유저 순위
+    user_stats = get_lp_rank_user_stats()
 
-    # 2. 챔피언별 승률
+    # 2. 챔피언별 승률 (기존과 동일)
     champ_stats = (
         GameData.objects.values('champion')
         .annotate(
@@ -700,9 +702,10 @@ def rank(request):
     # 승률이 높은 순으로 정렬, 승률이 같으면 KDA가 높은 순으로 정렬
     champion_stats = sorted(champion_stats, key=lambda x: (-x['winrate'], -x['kda']))
 
-    # 3. 라인별 순위표
+    # 3. LP 기반 라인별 순위표
     line_keys = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
     line_user_stats = []
+    
     for line in line_keys:
         # 같은 이름의 유저들을 그룹화하여 처리
         stats = (
@@ -717,6 +720,7 @@ def rank(request):
                 a_sum=Sum('assist'),
             )
         )
+        
         for s in stats:
             # 라인 한글명 변환
             line_names = {
@@ -724,11 +728,12 @@ def rank(request):
             }
             line_display = line_names.get(s['line'], s['line'])
             
-            # 같은 이름의 유저들 중 해당 라인에서 가장 최근 게임의 total_score 사용
+            # 같은 이름의 유저들의 현재 LP (GameData에서 계산)
             same_name_users = User.objects.filter(name=s['user__name'])
             user_lol_ids = list(same_name_users.values_list('lol_id', flat=True))
-            last_gamedata = GameData.objects.filter(user__in=user_lol_ids, line=line).order_by('-game__id').first()
-            total_score = last_gamedata.total_score if last_gamedata else 100
+            latest_gamedata = GameData.objects.filter(user__in=user_lol_ids).order_by('-id').first()
+            current_lp = latest_gamedata.lp_after if latest_gamedata else LP_INIT
+            tier = get_tier_from_lp(current_lp)
             
             line_user_stats.append({
                 'name': s['user__name'],
@@ -738,15 +743,17 @@ def rank(request):
                 'lose': s['lose'],
                 'winrate': int((s['win'] / s['total']) * 100) if s['total'] else 0,
                 'kda': round((s['k_sum'] + s['a_sum']) / (s['d_sum'] if s['d_sum'] else 1), 2),
-                'score': int(total_score),
+                'lp': int(current_lp),
+                'tier': tier,
             })
-    # 라인별로 그룹화하여 각 라인 내에서 score가 높은 순으로 정렬, score가 같으면 승률이 높은 순으로, 승률이 같으면 KDA가 높은 순으로 정렬
-    line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['score'], -x['winrate'], -x['kda']))
     
-    # 전체 정렬용 리스트 (라인 구분 없이 total_score 기준으로 정렬)
-    all_line_user_stats = sorted(line_user_stats, key=lambda x: (-x['score'], -x['winrate'], -x['kda']))
+    # 라인별로 그룹화하여 각 라인 내에서 LP가 높은 순으로 정렬
+    line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lp'], -x['winrate'], -x['kda']))
+    
+    # 전체 정렬용 리스트 (라인 구분 없이 LP 기준으로 정렬)
+    all_line_user_stats = sorted(line_user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
 
-    # 4. user별 상대전적 (실제 게임 데이터 기반)
+    # 4. user별 상대전적 (실제 게임 데이터 기반) - 기존 로직 유지
     vs_stats = {}
     for line in line_keys:
         # 같은 이름의 유저들을 그룹화하여 처리
@@ -818,7 +825,7 @@ def rank(request):
                     u1_kda = round((u1_kills + u1_assists) / (u1_deaths if u1_deaths > 0 else 1), 2)
                     u2_kda = round((u2_kills + u2_assists) / (u2_deaths if u2_deaths > 0 else 1), 2)
                     
-                    # 승률을 우선으로 하여 우세/열세 결정
+                    # 승률을 우세/열세 결정
                     if u1_winrate > u2_winrate:
                         # u1이 우세
                         pairs.append((
@@ -887,7 +894,7 @@ def rank(request):
         'user_stats': user_stats,
         'champion_stats': champion_stats,
         'line_user_stats': line_user_stats,
-        'all_line_user_stats': all_line_user_stats,  # 전체 정렬용 리스트 추가
+        'all_line_user_stats': all_line_user_stats,
         'vs_stats': vs_stats,
     })
 
@@ -970,100 +977,6 @@ def upload(request):
     context = {'champions': champions, 'users': users, 'range': range(10), 'best_player_options': best_player_options,
                'range_84': range(84), 'range_7': range(7)}
     return render(request, 'lolapp/upload.html', context)
-
-@csrf_exempt
-def upload_save(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            unique_key = generate_unique_key()
-            import datetime as dt
-            game, _ = Game.objects.get_or_create(unique_key=unique_key, defaults={'date': dt.datetime.now().strftime('%m-%d')})
-            for team_key in ['blue_team', 'red_team']:
-                team = data[team_key]
-                result = 'win' if team['result'] == '승리' else 'lose'
-                players = team['players']
-                # ai_score 기준 팀 내 랭킹 계산
-                ai_score_sorted = sorted(
-                    [(idx, p) for idx, p in enumerate(players)],
-                    key=lambda x: x[1]['ai_score'], reverse=True
-                )
-                idx_to_rank = {}
-                for rank_idx, (orig_idx, _) in enumerate(ai_score_sorted):
-                    idx_to_rank[orig_idx] = str(rank_idx + 1)  # '1'~'5'
-                line_order = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
-                for idx, p in enumerate(players):
-                    user_obj = User.objects.filter(lol_id=p['summoner_name']).first()
-                    if not user_obj:
-                        continue  # User가 없으면 저장하지 않음
-                    # 이전 total_score 불러오기 (없으면 100)
-                    last_gamedata = GameData.objects.filter(user=user_obj).order_by('-id').first()
-                    prev_score = last_gamedata.total_score if last_gamedata else 100
-                    # rank는 문자열 '1'~'5'
-                    rank_str = idx_to_rank.get(idx, '')
-                    # 점수 계산 - RANK 순위에 따라 점수 차등 적용
-                    if result == 'win':
-                        # 승리팀: 1~5위 순서대로 +5, +4, +3, +2, +1
-                        rank_bonus = 6 - int(rank_str) if rank_str.isdigit() else 0
-                        new_score = prev_score + rank_bonus
-                    else:  # lose
-                        # 패배팀: 1~5위 순서대로 -1, -2, -3, -4, -5
-                        rank_penalty = -int(rank_str) if rank_str.isdigit() else -3
-                        new_score = prev_score + rank_penalty
-                    # 연승/연패 streak 계산
-                    recent_results = list(GameData.objects.filter(user=user_obj).order_by('-id').values_list('result', flat=True)[:3])
-                    streak = 1
-                    for r in recent_results:
-                        if r == result:
-                            streak += 1
-                        else:
-                            break
-                    bonus = 0
-                    if result == 'win':
-                        if streak == 3:
-                            bonus = 1
-                        elif streak >= 4:
-                            bonus = 2
-                    elif result == 'lose':
-                        if streak == 3:
-                            bonus = -1
-                        elif streak >= 4:
-                            bonus = -2
-                    new_score += bonus
-                    
-                    # BEST! / WORST! 칭호 결정 및 추가 점수
-                    title = ""
-                    bonus_score = 0
-                    if result == 'win' and rank_str == '1':
-                        title = "BEST!"
-                        bonus_score = 2  # BEST 선정 시 +2점
-                    elif result == 'lose' and rank_str == '5':
-                        title = "WORST!"
-                        # WORST 선정 시 추가 점수는 없음
-                    
-                    new_score += bonus_score
-                    GameData.objects.create(
-                        game=game,
-                        user=user_obj,
-                        result=result,
-                        champion=p['champion'],
-                        line=line_order[idx] if idx < 5 else '',
-                        kill=int(p['kda'].split('/')[0]),
-                        death=int(p['kda'].split('/')[1]),
-                        assist=int(p['kda'].split('/')[2]),
-                        cs=p['cs'],
-                        damage=p['damage'],
-                        ai_score=p['ai_score'],
-                        placement=p['placement'],
-                        kda_ratio=p['kda_ratio'],
-                        rank=rank_str,
-                        total_score=new_score,
-                        title=title
-                    )
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid method'})
 
 def database(request):
     # 필터 파라미터 가져오기
@@ -1214,3 +1127,106 @@ def edit_game(request, game_id):
 def patchnote(request):
     """패치노트 페이지를 표시하는 뷰"""
     return render(request, 'lolapp/patchnote.html')
+
+@csrf_exempt
+def upload_save(request):
+    """LP 시스템 기반 게임 데이터 저장"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            unique_key = generate_unique_key()
+            import datetime as dt
+            game, _ = Game.objects.get_or_create(
+                unique_key=unique_key, 
+                defaults={'date': dt.datetime.now().strftime('%m-%d')}
+            )
+            
+            # 게임 데이터 준비 (LP 계산용)
+            game_data_list = []
+            
+            for team_key in ['blue_team', 'red_team']:
+                team = data[team_key]
+                result = 'win' if team['result'] == '승리' else 'lose'
+                players = team['players']
+                
+                # ai_score 기준 팀 내 랭킹 계산
+                ai_score_sorted = sorted(
+                    [(idx, p) for idx, p in enumerate(players)],
+                    key=lambda x: x[1]['ai_score'], reverse=True
+                )
+                idx_to_rank = {}
+                for rank_idx, (orig_idx, _) in enumerate(ai_score_sorted):
+                    idx_to_rank[orig_idx] = str(rank_idx + 1)  # '1'~'5'
+                
+                line_order = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
+                
+                for idx, p in enumerate(players):
+                    user_obj = User.objects.filter(lol_id=p['summoner_name']).first()
+                    if not user_obj:
+                        continue  # User가 없으면 저장하지 않음
+                    
+                    # 현재 LP (GameData에서 계산)
+                    latest_gamedata = GameData.objects.filter(user=user_obj).order_by('-id').first()
+                    current_lp = latest_gamedata.lp_after if latest_gamedata else LP_INIT
+                    
+                    # 게임 데이터 리스트에 추가 (LP 계산용)
+                    game_data_list.append({
+                        'user': user_obj,
+                        'result': result,
+                        'current_lp': current_lp,
+                        'player_data': p,
+                        'rank_str': idx_to_rank.get(idx, ''),
+                        'line': line_order[idx] if idx < 5 else '',
+                    })
+            
+            # LP 변화량 계산
+            new_lps = process_game_lp_changes(game_data_list)
+            
+            # GameData 저장
+            with transaction.atomic():
+                for game_data in game_data_list:
+                    user_obj = game_data['user']
+                    p = game_data['player_data']
+                    result = game_data['result']
+                    rank_str = game_data['rank_str']
+                    line = game_data['line']
+                    
+                    current_lp = game_data['current_lp']
+                    new_lp = new_lps[user_obj.lol_id]
+                    lp_change = new_lp - current_lp
+                    
+                    # BEST! / WORST! 칭호 결정
+                    title = ""
+                    if result == 'win' and rank_str == '1':
+                        title = "BEST!"
+                    elif result == 'lose' and rank_str == '5':
+                        title = "WORST!"
+                    
+                    # GameData 생성
+                    GameData.objects.create(
+                        game=game,
+                        user=user_obj,
+                        result=result,
+                        champion=p['champion'],
+                        line=line,
+                        kill=int(p['kda'].split('/')[0]),
+                        death=int(p['kda'].split('/')[1]),
+                        assist=int(p['kda'].split('/')[2]),
+                        cs=p['cs'],
+                        damage=p['damage'],
+                        ai_score=p['ai_score'],
+                        placement=p['placement'],
+                        kda_ratio=p['kda_ratio'],
+                        rank=rank_str,
+                        total_score=100,  # 기존 시스템 호환용으로 유지
+                        title=title,
+                        lp_before=current_lp,
+                        lp_after=new_lp,
+                        lp_change=lp_change,
+                    )
+                    # User의 LP는 더 이상 업데이트하지 않음 (GameData에서 관리)
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid method'})

@@ -26,6 +26,31 @@
         .user-rank { width: 32px; font-weight: bold; color: #90caf9; }
         .user-name { flex: 1; font-weight: bold; }
         .user-score { color: #ffd600; font-weight: bold; }
+        
+        /* LP 및 티어 스타일 */
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+        .tier-narak { background: #8b0000; color: #fff; } /* 나락계 - 어두운 빨강 */
+        .tier-junggan { background: #ff8c00; color: #fff; } /* 중간계 - 주황 */
+        .tier-cheonsang { background: #4169e1; color: #fff; } /* 천상계 - 파랑 */
+        
+        .lp-score {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .lp-change {
+            font-size: 0.9em;
+            margin-left: 4px;
+        }
+        .lp-change.positive { color: #4caf50; }
+        .lp-change.negative { color: #f44336; }
+        
         .vs-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .vs-table th, .vs-table td { border: none; background: #23232b; padding: 12px 8px; }
         .vs-table th { color: #90caf9; font-size: 1em; }
@@ -100,52 +125,43 @@
                 const lineStats = document.getElementById('line-stats');
                 
                 if (line === 'all') {
-                    // 전체 버튼: 전체 정렬된 리스트 표시 (total_score 기준)
-                    allLineStats.style.display = '';
+                    allLineStats.style.display = 'block';
                     lineStats.style.display = 'none';
                 } else {
-                    // 특정 라인 버튼: 라인별 그룹화된 리스트 표시
                     allLineStats.style.display = 'none';
-                    lineStats.style.display = '';
+                    lineStats.style.display = 'block';
                     
-                    // 해당 라인의 행만 표시
-                    lineStats.querySelectorAll('.line-row').forEach(row => {
-                        row.style.display = (row.dataset.line === line) ? '' : 'none';
+                    // 해당 라인만 표시
+                    document.querySelectorAll('.line-row').forEach(row => {
+                        const rowLine = row.dataset.line;
+                        row.style.display = (rowLine === line) ? '' : 'none';
                     });
                 }
             } else {
-                // 다른 탭들은 기존 방식대로 처리
-                document.querySelectorAll('.tab-content')[tabIdx].querySelectorAll('.line-row').forEach(row => {
-                    row.style.display = (line === 'all' || row.dataset.line === line) ? '' : 'none';
+                // 다른 탭에서는 일반적인 필터링
+                document.querySelectorAll('.line-row').forEach(row => {
+                    const rowLine = row.dataset.line;
+                    row.style.display = (line === 'all' || rowLine === line) ? '' : 'none';
                 });
             }
         }
-        window.onload = function() { showTab(0); };
     </script>
 </head>
 <body>
     <div class="container">
         <div class="tab-menu">
-            <button class="tab-btn" onclick="showTab(0)">순위표🥇🥈🥉</button>
-            <button class="tab-btn" onclick="showTab(1)">챔피언별 승률🚩</button>
-            <button class="tab-btn" onclick="showTab(2)">라인별 순위표🔥</button>
-            <button class="tab-btn" onclick="showTab(3)">user별 상대전적🥊🥊</button>
+            <button class="tab-btn active" onclick="showTab(0)">전체 순위</button>
+            <button class="tab-btn" onclick="showTab(1)">챔피언별 승률</button>
+            <button class="tab-btn" onclick="showTab(2)">라인별 순위표</button>
+            <button class="tab-btn" onclick="showTab(3)">상대전적</button>
         </div>
-        <!-- 1. 순위표 -->
+        
+        <!-- 1. 전체 순위 (LP 기반) -->
         <div class="tab-content active">
-            <div class="section-title">USER SCORE BOARD</div>
-            <table style="margin:0 auto; min-width:800px; background:#222; color:#fff; border-radius:10px; box-shadow:0 2px 16px #0002; border-collapse:separate; border-spacing:0;">
-                <tr style="background:#23232b;">
-                    <th style="padding:12px 18px; text-align:center;">RANK</th>
-                    <th style="padding:12px 18px; text-align:center;">USER</th>
-                    <th style="padding:12px 18px; text-align:center;">GAME</th>
-                    <th style="padding:12px 18px; text-align:center;">WIN</th>
-                    <th style="padding:12px 18px; text-align:center;">LOSE</th>
-                    <th style="padding:12px 18px; text-align:center;">WIN RATE</th>
-                    <th style="padding:12px 18px; text-align:center;">KDA</th>
-                    <th style="padding:12px 18px; text-align:center;">SCORE</th>
-                    <th style="padding:12px 18px; text-align:center;">BEST</th>
-                    <th style="padding:12px 18px; text-align:center;">WORST</th>
+            <div class="section-title">전체 순위 🏆</div>
+            <table>
+                <tr>
+                    <th>RANK</th><th>USER</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th><th>TIER</th><th>LP</th><th>BEST</th><th>WORST</th>
                 </tr>
                 {% for user in user_stats %}
                     <tr
@@ -181,7 +197,18 @@
                       <td style="text-align:center; padding:10px 0;">{{ user.lose }}</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
                       <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
-                      <td style="text-align:center; padding:10px 0;">{{ user.score }}</td>
+                      <td style="text-align:center; padding:10px 0;">
+                        <span class="tier-badge 
+                          {% if user.tier == '나락계' %}tier-narak
+                          {% elif user.tier == '중간계' %}tier-junggan
+                          {% elif user.tier == '천상계' %}tier-cheonsang
+                          {% endif %}">
+                          {{ user.tier }}
+                        </span>
+                      </td>
+                      <td style="text-align:center; padding:10px 0;">
+                        <span class="lp-score">{{ user.lp }}</span>
+                      </td>
                       <td style="text-align:center; padding:10px 0;">
                         {% if user.best_count > 0 %}
                           <span style="color: #4caf50; font-weight: bold;">{{ user.best_count }}</span>
@@ -198,10 +225,11 @@
                       </td>
                     </tr>
                 {% empty %}
-                <tr><td colspan="10" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
+                <tr><td colspan="11" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
                 {% endfor %}
             </table>
         </div>
+        
         <!-- 2. 챔피언별 승률 -->
         <div class="tab-content">
             <div class="section-title">챔피언별 승률🚩</div>
@@ -232,7 +260,8 @@
                 {% endfor %}
             </table>
         </div>
-        <!-- 3. 라인별 순위표 -->
+        
+        <!-- 3. 라인별 순위표 (LP 기반) -->
         <div class="tab-content">
             <div class="section-title">라인별 순위표🥇🥈🥉</div>
             <div class="line-filter">
@@ -245,96 +274,156 @@
             </div>
             <table>
                 <tr>
-                    <th>RANK</th><th>USER</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th><th>SCORE</th>
+                    <th>RANK</th><th>USER</th><th>LINE</th><th>GAME</th><th>WIN</th><th>LOSE</th><th>WIN RATE</th><th>KDA</th><th>TIER</th><th>LP</th>
                 </tr>
-                <!-- 전체 정렬된 리스트 (total_score 기준) -->
+                <!-- 전체 정렬된 리스트 (LP 기준) -->
                 <tbody id="all-line-stats">
-                    {% for user in all_line_user_stats %}
-                    <tr class="line-row" data-line="{{ user.line }}">
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.line }}</td>
-                        <td>{{ user.total }}</td>
-                        <td>{{ user.win }}</td>
-                        <td>{{ user.lose }}</td>
-                        <td>{{ user.winrate }}%</td>
-                        <td>{{ user.kda }}</td>
-                        <td>{{ user.score }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="9">데이터가 없습니다.</td></tr>
-                    {% endfor %}
+                {% for user in all_line_user_stats %}
+                <tr class="line-row" data-line="{{ user.line }}">
+                    <td style="text-align:center; padding:10px 0;">
+                        <span style="display:inline-block; min-width:48px;">
+                          {{ forloop.counter }}
+                          {% if forloop.counter == 1 %}
+                            <span style="margin-left:2px;">🥇</span>
+                          {% elif forloop.counter == 2 %}
+                            <span style="margin-left:2px;">🥈</span>
+                          {% elif forloop.counter == 3 %}
+                            <span style="margin-left:2px;">🥉</span>
+                          {% endif %}
+                        </span>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <a href="/search/?name={{ user.name }}" style="color:inherit; text-decoration:underline;">{{ user.name }}</a>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.line }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.total }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.win }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.lose }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <span class="tier-badge 
+                          {% if user.tier == '나락계' %}tier-narak
+                          {% elif user.tier == '중간계' %}tier-junggan
+                          {% elif user.tier == '천상계' %}tier-cheonsang
+                          {% endif %}">
+                          {{ user.tier }}
+                        </span>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <span class="lp-score">{{ user.lp }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
+                {% endfor %}
                 </tbody>
-                <!-- 라인별 정렬된 리스트 (라인별 그룹화) -->
-                <tbody id="line-stats" style="display: none;">
-                    {% for user in line_user_stats %}
-                    <tr class="line-row" data-line="{{ user.line }}">
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.line }}</td>
-                        <td>{{ user.total }}</td>
-                        <td>{{ user.win }}</td>
-                        <td>{{ user.lose }}</td>
-                        <td>{{ user.winrate }}%</td>
-                        <td>{{ user.kda }}</td>
-                        <td>{{ user.score }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="9">데이터가 없습니다.</td></tr>
-                    {% endfor %}
+                
+                <!-- 라인별 정렬된 리스트 -->
+                <tbody id="line-stats" style="display:none;">
+                {% for user in line_user_stats %}
+                <tr class="line-row" data-line="{{ user.line }}">
+                    <td style="text-align:center; padding:10px 0;">
+                        <span style="display:inline-block; min-width:48px;">
+                          {{ forloop.counter }}
+                          {% if forloop.counter == 1 %}
+                            <span style="margin-left:2px;">🥇</span>
+                          {% elif forloop.counter == 2 %}
+                            <span style="margin-left:2px;">🥈</span>
+                          {% elif forloop.counter == 3 %}
+                            <span style="margin-left:2px;">🥉</span>
+                          {% endif %}
+                        </span>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <a href="/search/?name={{ user.name }}" style="color:inherit; text-decoration:underline;">{{ user.name }}</a>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.line }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.total }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.win }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.lose }}</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.winrate }}%</td>
+                    <td style="text-align:center; padding:10px 0;">{{ user.kda }}</td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <span class="tier-badge 
+                          {% if user.tier == '나락계' %}tier-narak
+                          {% elif user.tier == '중간계' %}tier-junggan
+                          {% elif user.tier == '천상계' %}tier-cheonsang
+                          {% endif %}">
+                          {{ user.tier }}
+                        </span>
+                    </td>
+                    <td style="text-align:center; padding:10px 0;">
+                        <span class="lp-score">{{ user.lp }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" style="padding:12px 0; color:#bbb; text-align:center;">데이터가 없습니다.</td></tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
-        <!-- 4. user별 상대전적 -->
+        
+        <!-- 4. 상대전적 (기존 로직 유지) -->
         <div class="tab-content">
-            <div class="section-title">유저별 상대전적🥊</div>
-            <div class="line-filter">
-                <button class="line-btn active" data-line="all" onclick="filterLine(3, 'all')">전체</button>
-                <button class="line-btn" data-line="탑" onclick="filterLine(3, '탑')">탑</button>
-                <button class="line-btn" data-line="정글" onclick="filterLine(3, '정글')">정글</button>
-                <button class="line-btn" data-line="미드" onclick="filterLine(3, '미드')">미드</button>
-                <button class="line-btn" data-line="원딜" onclick="filterLine(3, '원딜')">원딜</button>
-                <button class="line-btn" data-line="서폿" onclick="filterLine(3, '서폿')">서폿</button>
-            </div>
-            <table class="vs-table">
-                <tr>
-                    <th>우세😀</th><th>열세😭</th>
-                </tr>
-                {% for line, vs_list in vs_stats.items %}
-                    {% for pair in vs_list %}
-                        <tr class="line-row" data-line="{{ line }}">
-                            <td>
-                                <div style="font-size:1.1em;">{{ pair.0.name }}</div>
-                                <div style="font-size:0.9em; color:#888;">{{ pair.0.total }}전 {{ pair.0.wins }}승{{ pair.0.losses }}패</div>
-                                <div>{{ pair.0.k_sum }} / {{ pair.0.d_sum }} / {{ pair.0.a_sum }}</div>
-                                <div class="kda-score">KDA: {{ pair.0.kda }}</div>
-                                <div class="winrate-text" style="color: #4caf50;">승률 {{ pair.0.winrate }}%</div>
-                            </td>
-                            <td>
-                                <div style="font-size:1.1em;">{{ pair.1.name }}</div>
-                                <div style="font-size:0.9em; color:#888;">{{ pair.1.total }}전 {{ pair.1.wins }}승{{ pair.1.losses }}패</div>
-                                <div>{{ pair.1.k_sum }} / {{ pair.1.d_sum }} / {{ pair.1.a_sum }}</div>
-                                <div class="kda-score">KDA: {{ pair.1.kda }}</div>
-                                <div class="winrate-text" style="color: #f44336;">승률 {{ pair.1.winrate }}%</div>
-                            </td>
-                        </tr>
-                        <tr class="line-row bar-row" data-line="{{ line }}">
-                            <td colspan="2">
-                                <div class="combined-winrate-bar">
-                                    <div class="dominant-fill" style="width: {{ pair.0.winrate }}%; background-color: #4caf50;"></div>
-                                    <div class="subordinate-fill" style="width: {{ pair.1.winrate }}%; background-color: #f44336;"></div>
+            <div class="section-title">상대전적 ⚔️</div>
+            {% for line, pairs in vs_stats.items %}
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #90caf9; margin-bottom: 12px;">{{ line }} 라인</h3>
+                {% if pairs %}
+                <table class="vs-table">
+                    <tr>
+                        <th>USER 1</th><th>VS</th><th>USER 2</th><th>WIN RATE</th><th>KDA</th><th>GAMES</th>
+                    </tr>
+                    {% for u1, u2 in pairs %}
+                    <tr class="{% if u1.winrate > u2.winrate %}win{% else %}lose{% endif %}">
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-weight: bold;">{{ u1.name }}</div>
+                                    <div class="winrate-text">{{ u1.winrate }}%</div>
                                 </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="2" style="text-align:center; color:#888; padding:20px;">
-                                해당 라인에서 상대로 만난 유저가 없습니다.
-                            </td>
-                        </tr>
+                                <div style="text-align: right;">
+                                    <div>{{ u1.k_sum }}/{{ u1.d_sum }}/{{ u1.a_sum }}</div>
+                                    <div class="kda-score">KDA: {{ u1.kda }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-size: 1.2em; font-weight: bold;">VS</td>
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-weight: bold;">{{ u2.name }}</div>
+                                    <div class="winrate-text">{{ u2.winrate }}%</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div>{{ u2.k_sum }}/{{ u2.d_sum }}/{{ u2.a_sum }}</div>
+                                    <div class="kda-score">KDA: {{ u2.kda }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="combined-winrate-bar">
+                                <div class="dominant-fill" style="width: {{ u1.winrate }}%;"></div>
+                                <div class="subordinate-fill" style="width: {{ u2.winrate }}%;"></div>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="font-weight: bold; color: #4caf50;">{{ u1.kda }}</div>
+                            <div style="font-weight: bold; color: #f44336;">{{ u2.kda }}</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="font-weight: bold;">{{ u1.total }}</div>
+                            <div style="font-weight: bold;">{{ u2.total }}</div>
+                        </td>
+                    </tr>
                     {% endfor %}
-                {% endfor %}
-            </table>
+                </table>
+                {% else %}
+                <p style="color: #bbb; text-align: center; padding: 20px;">상대전적 데이터가 없습니다.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
     </div>
 </body>
