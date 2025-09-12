@@ -1,0 +1,459 @@
+{% load static %}
+{% load custom_filters %}
+{% include 'lolapp/header.html' %}
+<link rel="stylesheet" href="{% static 'header.css' %}">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>팀 밸런스</title>
+    <style>
+        body { 
+            background: #1a1a1a; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            color: #e0e0e0; 
+            margin: 0;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 24px auto; 
+            background: #1a1a1a; 
+            border-radius: 10px; 
+            padding: 24px; 
+        }
+        .page-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #90caf9;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        /* 가상 팀 구성 섹션 */
+        .team-builder {
+            background: #23232b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .team-builder-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .team-input-section {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .team-input {
+            flex: 1;
+        }
+        .team-input h3 {
+            color: #4caf50;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+        .team-input h3.team2 {
+            color: #ef5350;
+        }
+        .user-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .user-input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+        .add-user-btn {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .add-user-btn:hover {
+            background: #45a049;
+        }
+        .team-members {
+            margin-top: 12px;
+        }
+        .team-member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a22;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+        .remove-member {
+            background: #ef5350;
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .calculate-btn {
+            background: #ffd600;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: block;
+            margin: 0 auto;
+        }
+        .calculate-btn:hover {
+            background: #ffeb3b;
+        }
+        
+        /* 가상 팀 결과 */
+        .virtual-result {
+            background: #1a1a22;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #4caf50;
+        }
+        .virtual-result h3 {
+            color: #4caf50;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .virtual-teams {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .virtual-team {
+            flex: 1;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .virtual-team.team1 {
+            border-left: 4px solid #4caf50;
+        }
+        .virtual-team.team2 {
+            border-left: 4px solid #ef5350;
+        }
+        .virtual-team h4 {
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .virtual-team .avg-lp {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 8px;
+        }
+        .virtual-team .winrate {
+            color: #bdbdbd;
+            margin-bottom: 12px;
+        }
+        .lp-changes {
+            background: #1a1a22;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .lp-change-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .lp-change-item:last-child {
+            margin-bottom: 0;
+        }
+        .lp-change-label {
+            color: #bdbdbd;
+        }
+        .lp-change-value {
+            font-weight: bold;
+        }
+        .lp-change-value.positive {
+            color: #4caf50;
+        }
+        .lp-change-value.negative {
+            color: #ef5350;
+        }
+        
+        .stats-summary {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #23232b;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            color: #bdbdbd;
+            font-size: 0.9em;
+        }
+        .game-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .game-card {
+            background: #23232b;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .game-date {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #90caf9;
+        }
+        .balance-grade {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .teams-container {
+            display: flex;
+            gap: 24px;
+            justify-content: space-between;
+        }
+        .team {
+            flex: 1;
+            background: #1a1a22;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .team-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .team.win .team-title {
+            color: #4caf50;
+        }
+        .team.lose .team-title {
+            color: #ef5350;
+        }
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .player {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+        .player-info {
+            flex: 1;
+        }
+        .player-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.1em;
+        }
+        .player-lp {
+            color: #bdbdbd;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+        .lp-diff {
+            text-align: center;
+            margin: 16px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ffd600;
+        }
+        .expected-lp-change {
+            text-align: center;
+            margin: 8px 0;
+            font-size: 1em;
+            color: #81c784;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .teams-container {
+                flex-direction: column;
+            }
+            .stats-summary {
+                flex-direction: column;
+                align-items: center;
+            }
+            .team-input-section {
+                flex-direction: column;
+            }
+            .virtual-teams {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-title">팀 밸런스 분석</div>
+        
+        <!-- 가상 팀 구성 섹션 -->
+        <div class="team-builder">
+            <div class="team-builder-title">🎮 가상 팀 구성</div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="team-input-section">
+                    <div class="team-input">
+                        <h3>팀 1 (초록)</h3>
+                        <input type="text" class="user-input" id="team1_input" placeholder="유저명 입력">
+                        <button type="button" class="add-user-btn" onclick="addUser('team1')">추가</button>
+                        <div class="team-members" id="team1_members"></div>
+                    </div>
+                    <div class="team-input">
+                        <h3 class="team2">팀 2 (빨강)</h3>
+                        <input type="text" class="user-input" id="team2_input" placeholder="유저명 입력">
+                        <button type="button" class="add-user-btn" onclick="addUser('team2')">추가</button>
+                        <div class="team-members" id="team2_members"></div>
+                    </div>
+                </div>
+                <button type="submit" class="calculate-btn">밸런스 계산하기</button>
+            </form>
+            
+            <!-- 가상 팀 결과 -->
+            {% if virtual_team_result %}
+            <div class="virtual-result">
+                <h3>📊 팀 밸런스 분석 결과</h3>
+                <div class="virtual-teams">
+                    <div class="virtual-team team1">
+                        <h4>팀 1</h4>
+                        <div class="avg-lp">평균 LP: {{ virtual_team_result.team1_avg_lp }}</div>
+                        <div class="winrate">기대승률: {{ virtual_team_result.expected_winrate_team1 }}%</div>
+                        <div class="lp-changes">
+                            <div class="lp-change-item">
+                                <span class="lp-change-label">승리 시 LP 변동:</span>
+                                <span class="lp-change-value positive">+{{ virtual_team_result.lp_change_team1_win }}</span>
+                            </div>
+                            <div class="lp-change-item">
+                                <span class="lp-change-label">패배 시 LP 변동:</span>
+                                <span class="lp-change-value negative">{{ virtual_team_result.lp_change_team1_lose }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="virtual-team team2">
+                        <h4>팀 2</h4>
+                        <div class="avg-lp">평균 LP: {{ virtual_team_result.team2_avg_lp }}</div>
+                        <div class="winrate">기대승률: {{ virtual_team_result.expected_winrate_team2 }}%</div>
+                        <div class="lp-changes">
+                            <div class="lp-change-item">
+                                <span class="lp-change-label">승리 시 LP 변동:</span>
+                                <span class="lp-change-value positive">+{{ virtual_team_result.lp_change_team2_win }}</span>
+                            </div>
+                            <div class="lp-change-item">
+                                <span class="lp-change-label">패배 시 LP 변동:</span>
+                                <span class="lp-change-value negative">{{ virtual_team_result.lp_change_team2_lose }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center; font-size: 1.2em; font-weight: bold; color: #ffd600;">
+                    LP 차이: {{ virtual_team_result.lp_diff }} | 
+                    {% if virtual_team_result.lp_diff <= 50 %}
+                        매우 균형한 매치
+                    {% elif virtual_team_result.lp_diff <= 100 %}
+                        균형한 매치
+                    {% elif virtual_team_result.lp_diff <= 150 %}
+                        약간 불균형한 매치
+                    {% else %}
+                        불균형한 매치
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        function addUser(team) {
+            const input = document.getElementById(team + '_input');
+            const members = document.getElementById(team + '_members');
+            const userName = input.value.trim();
+            
+            if (userName) {
+                // 중복 체크
+                const existingMembers = members.querySelectorAll('.team-member');
+                let isDuplicate = false;
+                existingMembers.forEach(member => {
+                    if (member.querySelector('.member-name').textContent === userName) {
+                        isDuplicate = true;
+                    }
+                });
+                
+                if (!isDuplicate) {
+                    const memberDiv = document.createElement('div');
+                    memberDiv.className = 'team-member';
+                    memberDiv.innerHTML = `
+                        <span class="member-name">${userName}</span>
+                        <button type="button" class="remove-member" onclick="removeMember(this)">제거</button>
+                        <input type="hidden" name="${team}_users[]" value="${userName}">
+                    `;
+                    members.appendChild(memberDiv);
+                    input.value = '';
+                } else {
+                    alert('이미 추가된 유저입니다.');
+                }
+            }
+        }
+        
+        function removeMember(button) {
+            button.parentElement.remove();
+        }
+        
+        // Enter 키로 유저 추가
+        document.getElementById('team1_input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addUser('team1');
+            }
+        });
+        
+        document.getElementById('team2_input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addUser('team2');
+            }
+        });
+    </script>
+</body>
+</html> 

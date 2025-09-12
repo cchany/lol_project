@@ -8,7 +8,7 @@
     <title>순위보기</title>
     <style>
         body { background: #1a1a1a; font-family: 'Segoe UI', Arial, sans-serif; color: #e0e0e0; }
-        .container { max-width: 950px; margin: 40px auto; background: #1a1a1a; border-radius: 10px; padding: 24px; }
+        .container { max-width: 1200px; margin: 40px auto; background: #1a1a1a; border-radius: 10px; padding: 24px; }
         .tab-menu { display: flex; gap: 8px; margin-bottom: 18px; }
         .tab-btn { padding: 8px 18px; border: none; border-radius: 6px 6px 0 0; background: #e3eaf6; color: #1976d2; font-weight: 500; cursor: pointer; }
         .tab-btn.active { background: #23232b; color: #fff; }
@@ -51,63 +51,264 @@
         .lp-change.positive { color: #4caf50; }
         .lp-change.negative { color: #f44336; }
         
-        .vs-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .vs-table th, .vs-table td { border: none; background: #23232b; padding: 12px 8px; }
-        .vs-table th { color: #90caf9; font-size: 1em; }
-        .vs-table .win { color: #81c784; font-weight: bold; }
-        .vs-table .lose { color: #ef5350; font-weight: bold; }
-        .combined-winrate-bar { 
-            width: 100%; 
-            height: 12px; 
-            background-color: #444; 
-            border-radius: 6px; 
-            margin: 0; 
-            overflow: hidden; 
-            display: flex; 
-        }
-        .vs-table tr.bar-row td { padding-top: 6px; padding-bottom: 12px; background: transparent; }
-        .dominant-fill { 
-            height: 100%; 
-            background-color: #4caf50; 
-            transition: width 0.3s ease; 
-        }
-        .subordinate-fill { 
-            height: 100%; 
-            background-color: #f44336; 
-            transition: width 0.3s ease; 
-        }
-        .kda-score { color: #1976d2; font-weight: bold; margin-left: 8px; }
-        .death { color: #ef5350; font-weight: bold; }
-        .vs-table .win, .vs-table .win * { color: #81c784 !important; font-weight: bold; }
-        .vs-table .lose, .vs-table .lose * { color: #ef5350 !important; font-weight: bold; }
-        .kda-score { margin-left: 8px; }
-        .vs-table td { font-size: 1.05em; }
-        
-        /* 승률에 따른 박스 배경색 */
-        .vs-table .win {
-            background: rgba(25, 118, 210, 0.1) !important;
-            border: 2px solid rgba(25, 118, 210, 0.3);
-            border-radius: 8px;
+        /* 상대전적 새로운 디자인 */
+        .vs-section {
+            margin-bottom: 32px;
+            background: #2a2a35;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         
-        .vs-table .lose {
-            background: rgba(244, 67, 54, 0.1) !important;
-            border: 2px solid rgba(244, 67, 54, 0.3);
-            border-radius: 8px;
+        .vs-section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
-        .winrate-text {
-            font-size: 0.8em;
-            margin-top: 4px;
-            text-align: center;
+        .vs-section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(45deg, #1976d2, #90caf9);
+            border-radius: 2px;
+        }
+        
+        .vs-matchup-card {
+            background: #32323e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vs-matchup-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .vs-matchup-card:hover {
+            border-color: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        
+        .vs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .vs-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .vs-games {
+            background: #1976d2;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
             font-weight: bold;
         }
         
-        .win .winrate-text {
-            color: #1976d2;
+        .vs-players {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
         }
         
-        .lose .winrate-text {
+        .vs-player {
+            background: #2a2a35;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .vs-player.winner {
+            border: 2px solid #4caf50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .vs-player.loser {
+            border: 2px solid #f44336;
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .vs-player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        
+        .vs-player-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .vs-stat-item {
+            text-align: center;
+        }
+        
+        .vs-stat-label {
+            font-size: 0.8em;
+            color: #bdbdbd;
+            margin-bottom: 4px;
+        }
+        
+        .vs-stat-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .vs-record {
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .vs-record-label {
+            font-size: 0.8em;
+            color: #bdbdbd;
+            margin-bottom: 4px;
+        }
+        
+        .vs-record-value {
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .vs-vs {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1976d2;
+            text-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
+        }
+        
+        .vs-kda {
+            background: #1976d2;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .vs-no-data {
+            text-align: center;
+            color: #bdbdbd;
+            padding: 40px;
+            font-style: italic;
+        }
+        
+        .vs-line-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .vs-line-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .vs-line-btn:hover {
+            background: #555;
+            transform: translateY(-1px);
+        }
+        
+        .vs-line-btn.active {
+            background: linear-gradient(45deg, #1976d2, #90caf9);
+            box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+        }
+        
+        /* 합쳐진 승률바 */
+        .vs-combined-winrate {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .vs-combined-winrate-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #90caf9;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .vs-combined-winrate-bar {
+            width: 100%;
+            height: 16px;
+            background: #444;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .vs-combined-winrate-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .vs-combined-winrate-fill.win {
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+        
+        .vs-combined-winrate-fill.lose {
+            background: linear-gradient(90deg, #f44336, #ef5350);
+        }
+        
+        .vs-combined-winrate-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .vs-combined-winrate-label.win {
+            color: #4caf50;
+        }
+        
+        .vs-combined-winrate-label.lose {
             color: #f44336;
         }
     </style>
@@ -144,6 +345,23 @@
                     row.style.display = (line === 'all' || rowLine === line) ? '' : 'none';
                 });
             }
+        }
+        
+        function filterVsLine(line) {
+            // VS 라인 필터 버튼 활성화
+            document.querySelectorAll('.vs-line-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.line === line);
+            });
+            
+            // VS 섹션 표시/숨김
+            document.querySelectorAll('.vs-section').forEach(section => {
+                const sectionLine = section.dataset.line;
+                if (line === 'all' || sectionLine === line) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
         }
     </script>
 </head>
@@ -364,63 +582,110 @@
             </table>
         </div>
         
-        <!-- 4. 상대전적 (기존 로직 유지) -->
+        <!-- 4. 상대전적 (새로운 디자인) -->
         <div class="tab-content">
             <div class="section-title">상대전적 ⚔️</div>
+            
+            <!-- 라인 필터 -->
+            <div class="vs-line-filter">
+                <button class="vs-line-btn active" data-line="all" onclick="filterVsLine('all')">전체</button>
+                <button class="vs-line-btn" data-line="탑" onclick="filterVsLine('탑')">탑</button>
+                <button class="vs-line-btn" data-line="정글" onclick="filterVsLine('정글')">정글</button>
+                <button class="vs-line-btn" data-line="미드" onclick="filterVsLine('미드')">미드</button>
+                <button class="vs-line-btn" data-line="원딜" onclick="filterVsLine('원딜')">원딜</button>
+                <button class="vs-line-btn" data-line="서폿" onclick="filterVsLine('서폿')">서폿</button>
+            </div>
+            
             {% for line, pairs in vs_stats.items %}
-            <div style="margin-bottom: 24px;">
-                <h3 style="color: #90caf9; margin-bottom: 12px;">{{ line }} 라인</h3>
+            <div class="vs-section" data-line="{{ line }}">
+                <div class="vs-section-title">
+                    {{ line }} 라인
+                </div>
+                
                 {% if pairs %}
-                <table class="vs-table">
-                    <tr>
-                        <th>USER 1</th><th>VS</th><th>USER 2</th><th>WIN RATE</th><th>KDA</th><th>GAMES</th>
-                    </tr>
                     {% for u1, u2 in pairs %}
-                    <tr class="{% if u1.winrate > u2.winrate %}win{% else %}lose{% endif %}">
-                        <td>
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <div style="font-weight: bold;">{{ u1.name }}</div>
-                                    <div class="winrate-text">{{ u1.winrate }}%</div>
+                    <div class="vs-matchup-card">
+                        <div class="vs-header">
+                            <div class="vs-title">{{ u1.name }} vs {{ u2.name }}</div>
+                            <div class="vs-games">{{ u1.total }}경기</div>
+                        </div>
+                        
+                        <div class="vs-players">
+                            <!-- 플레이어 1 -->
+                            <div class="vs-player {% if u1.winrate > u2.winrate %}winner{% else %}loser{% endif %}">
+                                <div class="vs-player-name">{{ u1.name }}</div>
+                                
+                                <div class="vs-player-stats">
+                                    <div class="vs-stat-item">
+                                        <div class="vs-stat-label">킬/데스/어시</div>
+                                        <div class="vs-stat-value">{{ u1.k_sum }}/{{ u1.d_sum }}/{{ u1.a_sum }}</div>
+                                    </div>
+                                    <div class="vs-stat-item">
+                                        <div class="vs-stat-label">KDA</div>
+                                        <div class="vs-stat-value">{{ u1.kda }}</div>
+                                    </div>
                                 </div>
-                                <div style="text-align: right;">
-                                    <div>{{ u1.k_sum }}/{{ u1.d_sum }}/{{ u1.a_sum }}</div>
-                                    <div class="kda-score">KDA: {{ u1.kda }}</div>
+                                
+                                <div class="vs-record">
+                                    <div class="vs-record-label">전적</div>
+                                    <div class="vs-record-value">{{ u1.total }}전 {{ u1.wins }}승 {{ u1.losses }}패</div>
                                 </div>
                             </div>
-                        </td>
-                        <td style="text-align: center; font-size: 1.2em; font-weight: bold;">VS</td>
-                        <td>
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <div style="font-weight: bold;">{{ u2.name }}</div>
-                                    <div class="winrate-text">{{ u2.winrate }}%</div>
+                            
+                            <!-- VS -->
+                            <div class="vs-vs">VS</div>
+                            
+                            <!-- 플레이어 2 -->
+                            <div class="vs-player {% if u2.winrate > u1.winrate %}winner{% else %}loser{% endif %}">
+                                <div class="vs-player-name">{{ u2.name }}</div>
+                                
+                                <div class="vs-player-stats">
+                                    <div class="vs-stat-item">
+                                        <div class="vs-stat-label">킬/데스/어시</div>
+                                        <div class="vs-stat-value">{{ u2.k_sum }}/{{ u2.d_sum }}/{{ u2.a_sum }}</div>
+                                    </div>
+                                    <div class="vs-stat-item">
+                                        <div class="vs-stat-label">KDA</div>
+                                        <div class="vs-stat-value">{{ u2.kda }}</div>
+                                    </div>
                                 </div>
-                                <div style="text-align: right;">
-                                    <div>{{ u2.k_sum }}/{{ u2.d_sum }}/{{ u2.a_sum }}</div>
-                                    <div class="kda-score">KDA: {{ u2.kda }}</div>
+                                
+                                <div class="vs-record">
+                                    <div class="vs-record-label">전적</div>
+                                    <div class="vs-record-value">{{ u2.total }}전 {{ u2.wins }}승 {{ u2.losses }}패</div>
                                 </div>
                             </div>
-                        </td>
-                        <td>
-                            <div class="combined-winrate-bar">
-                                <div class="dominant-fill" style="width: {{ u1.winrate }}%;"></div>
-                                <div class="subordinate-fill" style="width: {{ u2.winrate }}%;"></div>
+                        </div>
+                        
+                        <!-- 합쳐진 승률바 -->
+                        <div class="vs-combined-winrate">
+                            <div class="vs-combined-winrate-title">상대전적 승률</div>
+                            <div class="vs-combined-winrate-bar">
+                                <div class="vs-combined-winrate-fill {% if u1.winrate > u2.winrate %}win{% else %}lose{% endif %}" 
+                                     style="width: {{ u1.winrate }}%;">
+                                    {{ u1.winrate }}%
+                                </div>
+                                <div class="vs-combined-winrate-fill {% if u2.winrate > u1.winrate %}win{% else %}lose{% endif %}" 
+                                     style="width: {{ u2.winrate }}%;">
+                                    {{ u2.winrate }}%
+                                </div>
                             </div>
-                        </td>
-                        <td style="text-align: center;">
-                            <div style="font-weight: bold; color: #4caf50;">{{ u1.kda }}</div>
-                            <div style="font-weight: bold; color: #f44336;">{{ u2.kda }}</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <div style="font-weight: bold;">{{ u1.total }}</div>
-                            <div style="font-weight: bold;">{{ u2.total }}</div>
-                        </td>
-                    </tr>
+                            <div class="vs-combined-winrate-labels">
+                                <div class="vs-combined-winrate-label {% if u1.winrate > u2.winrate %}win{% else %}lose{% endif %}">
+                                    {{ u1.name }} ({{ u1.winrate }}%)
+                                </div>
+                                <div class="vs-combined-winrate-label {% if u2.winrate > u1.winrate %}win{% else %}lose{% endif %}">
+                                    {{ u2.name }} ({{ u2.winrate }}%)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
-                </table>
                 {% else %}
-                <p style="color: #bbb; text-align: center; padding: 20px;">상대전적 데이터가 없습니다.</p>
+                    <div class="vs-no-data">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2em; margin-bottom: 12px; color: #666;"></i>
+                        <div>{{ line }} 라인 상대전적 데이터가 없습니다.</div>
+                    </div>
                 {% endif %}
             </div>
             {% endfor %}

@@ -18,7 +18,9 @@ from .lp_system import (
     get_tier_from_lp, 
     process_game_lp_changes, 
     get_game_summary,
-    LP_INIT
+    LP_INIT,
+    calculate_expected_winrate,
+    calculate_lp_changes
 )
 
 # 챔피언 이름 → 역할군 매핑
@@ -898,73 +900,6 @@ def rank(request):
         'vs_stats': vs_stats,
     })
 
-def calc_game_score(kill, assist, death, kp, role):
-    kda = (kill + assist) / (death if death != 0 else 1)
-    if role == 'tank' or role == 'initiate_support':
-        # 탱커/이니시 서폿
-        return (kill * 1.2) + (assist * 2.0) - (death * 1.5) + (kp * 30) + (kda * 2.5)
-    elif role == 'utility_support':
-        # 유틸 서폿 (어시스트/킬관여율 가중치 소폭 하향)
-        return (kill * 1.0) + (assist * 1.7) - (death * 1.2) + (kp * 15) + (kda * 2.7)
-    elif role == 'bruiser':
-        return (kill * 1.6) + (assist * 1.6) - (death * 1.8) + (kp * 27) + (kda * 2.3)
-    elif role == 'split':
-        return (kill * 2.0) + (assist * 1.2) - (death * 2.2) + (kp * 18) + (kda * 2.2)
-    elif role == 'dealer':
-        return (kill * 1.8) + (assist * 1.5) - (death * 2.0) + (kp * 25) + (kda * 2.5)
-    else:
-        # 기본값 (기존 공식)
-        return (kill * 2) + (assist * 1.5) - (death * 3) + (kp * 40) + (kda * 3)
-
-def get_rank_title(rank_score):
-    """팀 내 순위 점수에 따른 타이틀 반환"""
-    if rank_score == 5:
-        return "MVP"
-    elif rank_score == 4:
-        return "ACE"
-    elif rank_score == 3:
-        return "Normal"
-    elif rank_score == 2:
-        return "Normal"
-    elif rank_score == 1:
-        return "Bus"
-    elif rank_score == -1:
-        return "피해자"
-    elif rank_score == -2:
-        return "방관자"
-    elif rank_score == -3:
-        return "방관자"
-    elif rank_score == -4:
-        return "가해자"
-    elif rank_score == -5:
-        return "범인"
-    else:
-        return ""
-
-def calculate_rank_scores(game_data_list):
-    """게임 데이터를 받아서 각 플레이어의 팀 내 순위 점수를 계산"""
-    # 승리팀과 패배팀 분리
-    win_team = [(i, data) for i, data in enumerate(game_data_list) if data['result'] == 'win']
-    lose_team = [(i, data) for i, data in enumerate(game_data_list) if data['result'] == 'lose']
-    
-    # 각 팀 내에서 game_score 기준으로 정렬
-    win_team.sort(key=lambda x: x[1]['game_score'], reverse=True)
-    lose_team.sort(key=lambda x: x[1]['game_score'], reverse=True)
-    
-    # 팀 내 순위 점수 계산
-    rank_scores = {}
-    
-    # 승리팀 순위 점수: +5, +4, +3, +2, +1
-    win_points = [5, 4, 3, 2, 1]
-    for i, (player_idx, _) in enumerate(win_team):
-        rank_scores[player_idx] = win_points[i] if i < len(win_points) else 0
-    
-    # 패배팀 순위 점수: -1, -2, -3, -4, -5
-    lose_points = [-1, -2, -3, -4, -5]
-    for i, (player_idx, _) in enumerate(lose_team):
-        rank_scores[player_idx] = lose_points[i] if i < len(lose_points) else 0
-    
-    return rank_scores
 
 @csrf_exempt
 def upload(request):
@@ -1230,3 +1165,66 @@ def upload_save(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid method'})
+
+def balance(request):
+    """팀 밸런스 페이지 - 가상 팀 구성"""
+    # 가상 팀 구성 요청 처리
+    virtual_team_result = None
+    if request.method == 'POST':
+        team1_users = request.POST.getlist('team1_users[]')
+        team2_users = request.POST.getlist('team2_users[]')
+        
+        if team1_users and team2_users:
+            # 팀 구성원들의 현재 LP 조회
+            team1_lps = []
+            team2_lps = []
+            
+            for user_name in team1_users:
+                user = User.objects.filter(name=user_name).first()
+                if user:
+                    team1_lps.append(user.current_lp)
+            
+            for user_name in team2_users:
+                user = User.objects.filter(name=user_name).first()
+                if user:
+                    team2_lps.append(user.current_lp)
+            
+            if team1_lps and team2_lps:
+                # 팀 평균 LP 계산
+                team1_avg_lp = sum(team1_lps) / len(team1_lps)
+                team2_avg_lp = sum(team2_lps) / len(team2_lps)
+                
+                # LP 차이 계산
+                lp_diff = abs(team1_avg_lp - team2_avg_lp)
+                
+                # 기대승률 계산 (lp_system의 공식 사용)
+                expected_winrate_team1 = calculate_expected_winrate(team1_avg_lp, team2_avg_lp)
+                expected_winrate_team2 = calculate_expected_winrate(team2_avg_lp, team1_avg_lp)
+                
+                # 각 팀의 승리/패배 시나리오별 LP 변동량 계산
+                # 팀1이 승리하는 경우
+                team1_win_scenario = calculate_lp_changes(team1_avg_lp, team2_avg_lp, 1)
+                # 팀2가 승리하는 경우  
+                team2_win_scenario = calculate_lp_changes(team2_avg_lp, team1_avg_lp, 1)
+                
+                virtual_team_result = {
+                    'team1_users': team1_users,
+                    'team2_users': team2_users,
+                    'team1_avg_lp': round(team1_avg_lp, 1),
+                    'team2_avg_lp': round(team2_avg_lp, 1),
+                    'lp_diff': round(lp_diff, 1),
+                    'expected_winrate_team1': round(expected_winrate_team1 * 100, 1),
+                    'expected_winrate_team2': round(expected_winrate_team2 * 100, 1),
+                    # 팀1의 변동량
+                    'lp_change_team1_win': round(team1_win_scenario['win_team_delta'], 1),
+                    'lp_change_team1_lose': round(team2_win_scenario['lose_team_delta'], 1),  # 팀2가 승리할 때 팀1의 패배 변동량
+                    # 팀2의 변동량
+                    'lp_change_team2_win': round(team2_win_scenario['win_team_delta'], 1),
+                    'lp_change_team2_lose': round(team1_win_scenario['lose_team_delta'], 1),  # 팀1이 승리할 때 팀2의 패배 변동량
+                }
+    
+    context = {
+        'virtual_team_result': virtual_team_result,
+    }
+    
+    return render(request, 'lolapp/balance.html', context)

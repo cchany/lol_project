@@ -225,8 +225,8 @@
                                 </div>
                                 <div style="display:flex; gap:12px; margin-top:4px; font-size:0.9em; color:#bdbdbd;">
                                     <span>KP: {{ game.kp|default:"-" }}%</span>
-                                    <span>Rank: {% if game.score_change > 0 %}+{% endif %}{{ game.score_change|default:"-" }} </span>
-                                    <span>Score: {{ game.after_score }}🔥</span>
+                                    <span>Rank: {% if game.lp_change > 0 %}+{% endif %}{{ game.lp_change|default:"-" }}</span>
+                                    <span>Score: {{ game.lp_after }}🔥</span>
                                 </div>
                                 <div class="game-vs" style="display:flex; gap:12px; margin-top:4px; font-size:0.9em; color:#bdbdbd;">상대: {{ game.opponent }}</div>
                             </div>
@@ -306,14 +306,14 @@
       const recentScores = {{ recent_scores|safe }};
       const ctx = document.getElementById('scoreLineChart').getContext('2d');
       const labels = recentScores.map(s => s.date);
-      const data = recentScores.map(s => s.total_score);
+      const data = recentScores.map(s => s.lp);
       const pointColors = recentScores.map(s => s.result === 'win' ? '#4caf50' : '#ef5350');
       const chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Total Score',
+            label: 'LP',
             data: data,
             borderColor: '#4caf50',
             backgroundColor: 'rgba(76,175,80,0.1)',
