@@ -51,7 +51,7 @@ champion_name_to_role = {
     "드레이븐": "dealer", "에코": "dealer", "엘리스": "dealer", "이즈리얼": "dealer", "이즈리얼": "dealer",
     "피즈": "dealer", "그레이브즈": "dealer", "하이머딩거": "dealer", "흐웨이": "dealer", "제이스": "dealer",
     "진": "dealer", "징크스": "dealer", "카이사": "dealer", "칼리스타": "dealer", "카서스": "dealer",
-    "카사딘": "dealer", "카타리나": "dealer", "케넨": "dealer", "카직스": "dealer", "킨드레드": "dealer",
+    "카사딘": "dealer", "카타리나": "dealer", "카직스": "dealer", "킨드레드": "dealer",
     "코그모": "dealer", "르블랑": "dealer", "루시안": "dealer", "럭스": "dealer", "말자하": "dealer",
     "멜": "dealer", "미스 포츈": "dealer", "니코": "dealer", "니달리": "dealer", "닐라": "dealer",
     "오리아나": "dealer", "파이크": "dealer", "키아나": "dealer", "퀸": "dealer", "라이즈": "dealer",
@@ -647,7 +647,7 @@ def rank(request):
     # 1. LP 기반 전체 유저 순위
     user_stats = get_lp_rank_user_stats()
 
-    # 2. 챔피언별 승률 (기존과 동일)
+    # 2. 챔피언별 승률 (승률 높은 순으로 정렬)
     champ_stats = (
         GameData.objects.values('champion')
         .annotate(
@@ -749,10 +749,10 @@ def rank(request):
                 'tier': tier,
             })
     
-    # 라인별로 그룹화하여 각 라인 내에서 LP가 높은 순으로 정렬
-    line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lp'], -x['winrate'], -x['kda']))
+    # 라인별로 그룹화하여 각 라인 내에서 승률이 높은 순으로 정렬
+    line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['winrate'], -x['kda']))
     
-    # 전체 정렬용 리스트 (라인 구분 없이 LP 기준으로 정렬)
+    # 전체 정렬용 리스트 (LP 높은 순, LP 같으면 승률 높은 순, 승률도 같으면 KDA 높은 순)
     all_line_user_stats = sorted(line_user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
 
     # 4. user별 상대전적 (실제 게임 데이터 기반) - 기존 로직 유지
@@ -1168,6 +1168,9 @@ def upload_save(request):
 
 def balance(request):
     """팀 밸런스 페이지 - 가상 팀 구성"""
+    # 모든 유저 리스트 가져오기
+    all_users = User.objects.all().order_by('name')
+    
     # 가상 팀 구성 요청 처리
     virtual_team_result = None
     if request.method == 'POST':
@@ -1207,24 +1210,38 @@ def balance(request):
                 # 팀2가 승리하는 경우  
                 team2_win_scenario = calculate_lp_changes(team2_avg_lp, team1_avg_lp, 1)
                 
+                # 팀별 티어 정보 추가
+                team1_tier = get_tier_from_lp(team1_avg_lp)
+                team2_tier = get_tier_from_lp(team2_avg_lp)
+                
+                # 밸런스 평가 (LP 차이 기준)
+                balance_status = "균형" if lp_diff <= 25 else "불균형" if lp_diff <= 50 else "심각한 불균형"
+                
                 virtual_team_result = {
                     'team1_users': team1_users,
                     'team2_users': team2_users,
                     'team1_avg_lp': round(team1_avg_lp, 1),
                     'team2_avg_lp': round(team2_avg_lp, 1),
+                    'team1_tier': team1_tier,
+                    'team2_tier': team2_tier,
                     'lp_diff': round(lp_diff, 1),
+                    'balance_status': balance_status,
                     'expected_winrate_team1': round(expected_winrate_team1 * 100, 1),
                     'expected_winrate_team2': round(expected_winrate_team2 * 100, 1),
-                    # 팀1의 변동량
-                    'lp_change_team1_win': round(team1_win_scenario['win_team_delta'], 1),
-                    'lp_change_team1_lose': round(team2_win_scenario['lose_team_delta'], 1),  # 팀2가 승리할 때 팀1의 패배 변동량
-                    # 팀2의 변동량
-                    'lp_change_team2_win': round(team2_win_scenario['win_team_delta'], 1),
-                    'lp_change_team2_lose': round(team1_win_scenario['lose_team_delta'], 1),  # 팀1이 승리할 때 팀2의 패배 변동량
+                    # 팀1의 변동량 (정수로 반올림)
+                    'lp_change_team1_win': int(round(team1_win_scenario['win_team_delta'])),
+                    'lp_change_team1_lose': int(round(team2_win_scenario['lose_team_delta'])),  # 팀2가 승리할 때 팀1의 패배 변동량
+                    # 팀2의 변동량 (정수로 반올림)
+                    'lp_change_team2_win': int(round(team2_win_scenario['win_team_delta'])),
+                    'lp_change_team2_lose': int(round(team1_win_scenario['lose_team_delta'])),  # 팀1이 승리할 때 팀2의 패배 변동량
+                    # 추가 정보
+                    'team1_lp_range': f"{min(team1_lps)}~{max(team1_lps)}" if team1_lps else "N/A",
+                    'team2_lp_range': f"{min(team2_lps)}~{max(team2_lps)}" if team2_lps else "N/A",
                 }
     
     context = {
         'virtual_team_result': virtual_team_result,
+        'all_users': all_users,  # 유저 리스트 추가
     }
     
     return render(request, 'lolapp/balance.html', context)

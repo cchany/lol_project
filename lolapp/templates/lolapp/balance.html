@@ -44,6 +44,62 @@
             margin-bottom: 20px;
             text-align: center;
         }
+        
+        /* 유저 리스트 섹션 */
+        .user-list-section {
+            background: #1a1a22;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .user-list-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+        }
+        .user-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-item:hover {
+            background: #3a3a3a;
+            border-color: #4caf50;
+        }
+        .user-item.selected {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: #000;
+        }
+        .user-name {
+            font-weight: bold;
+        }
+        .user-lp {
+            font-size: 0.9em;
+            color: #bdbdbd;
+        }
+        .user-item.selected .user-lp {
+            color: #333;
+        }
+        
         .team-input-section {
             display: flex;
             gap: 24px;
@@ -60,33 +116,12 @@
         .team-input h3.team2 {
             color: #ef5350;
         }
-        .user-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #555;
-            border-radius: 6px;
-            background: #2a2a2a;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-        .user-input:focus {
-            outline: none;
-            border-color: #4caf50;
-        }
-        .add-user-btn {
-            background: #4caf50;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        .add-user-btn:hover {
-            background: #45a049;
-        }
         .team-members {
             margin-top: 12px;
+            min-height: 100px;
+            border: 2px dashed #444;
+            border-radius: 6px;
+            padding: 8px;
         }
         .team-member {
             display: flex;
@@ -106,6 +141,12 @@
             cursor: pointer;
             font-size: 0.8em;
         }
+        .team-placeholder {
+            color: #666;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
         .calculate-btn {
             background: #ffd600;
             color: #000;
@@ -120,6 +161,10 @@
         }
         .calculate-btn:hover {
             background: #ffeb3b;
+        }
+        .calculate-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
         }
         
         /* 가상 팀 결과 */
@@ -162,6 +207,11 @@
             color: #90caf9;
             margin-bottom: 8px;
         }
+        .virtual-team .tier {
+            font-size: 1em;
+            color: #ffd600;
+            margin-bottom: 8px;
+        }
         .virtual-team .winrate {
             color: #bdbdbd;
             margin-bottom: 12px;
@@ -192,135 +242,23 @@
             color: #ef5350;
         }
         
-        .stats-summary {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-        .stat-card {
-            background: #23232b;
-            border-radius: 12px;
-            padding: 20px;
+        .balance-status {
             text-align: center;
-            min-width: 150px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4caf50;
-            margin-bottom: 8px;
-        }
-        .stat-label {
-            color: #bdbdbd;
-            font-size: 0.9em;
-        }
-        .game-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .game-card {
-            background: #23232b;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .game-date {
             font-size: 1.2em;
             font-weight: bold;
-            color: #90caf9;
-        }
-        .balance-grade {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        .teams-container {
-            display: flex;
-            gap: 24px;
-            justify-content: space-between;
-        }
-        .team {
-            flex: 1;
-            background: #1a1a22;
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .team-title {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        .team.win .team-title {
-            color: #4caf50;
-        }
-        .team.lose .team-title {
-            color: #ef5350;
-        }
-        .player-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .player {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            background: #2a2a2a;
-            border-radius: 6px;
-        }
-        .player-info {
-            flex: 1;
-        }
-        .player-name {
-            font-weight: bold;
-            color: #fff;
-            font-size: 1.1em;
-        }
-        .player-lp {
-            color: #bdbdbd;
-            font-size: 0.9em;
-            margin-top: 4px;
-        }
-        .lp-diff {
-            text-align: center;
-            margin: 16px 0;
-            font-size: 1.1em;
-            font-weight: bold;
             color: #ffd600;
+            margin-bottom: 16px;
         }
-        .expected-lp-change {
-            text-align: center;
-            margin: 8px 0;
-            font-size: 1em;
-            color: #81c784;
-            font-weight: bold;
-        }
+        
         @media (max-width: 768px) {
-            .teams-container {
-                flex-direction: column;
-            }
-            .stats-summary {
-                flex-direction: column;
-                align-items: center;
-            }
             .team-input-section {
                 flex-direction: column;
             }
             .virtual-teams {
                 flex-direction: column;
+            }
+            .user-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
     </style>
@@ -332,33 +270,51 @@
         <!-- 가상 팀 구성 섹션 -->
         <div class="team-builder">
             <div class="team-builder-title">🎮 가상 팀 구성</div>
+            
+            <!-- 유저 리스트 -->
+            <div class="user-list-section">
+                <div class="user-list-title">👥 유저 목록 (클릭하여 팀에 추가)</div>
+                <div class="user-grid">
+                    {% for user in all_users %}
+                    <div class="user-item" onclick="addUserToTeam('{{ user.name }}', {{ user.current_lp }})">
+                        <span class="user-name">{{ user.name }}</span>
+                        <span class="user-lp">{{ user.current_lp }} LP</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
             <form method="post">
                 {% csrf_token %}
                 <div class="team-input-section">
                     <div class="team-input">
                         <h3>팀 1 (초록)</h3>
-                        <input type="text" class="user-input" id="team1_input" placeholder="유저명 입력">
-                        <button type="button" class="add-user-btn" onclick="addUser('team1')">추가</button>
-                        <div class="team-members" id="team1_members"></div>
+                        <div class="team-members" id="team1_members">
+                            <div class="team-placeholder">유저를 클릭하여 추가하세요</div>
+                        </div>
                     </div>
                     <div class="team-input">
                         <h3 class="team2">팀 2 (빨강)</h3>
-                        <input type="text" class="user-input" id="team2_input" placeholder="유저명 입력">
-                        <button type="button" class="add-user-btn" onclick="addUser('team2')">추가</button>
-                        <div class="team-members" id="team2_members"></div>
+                        <div class="team-members" id="team2_members">
+                            <div class="team-placeholder">유저를 클릭하여 추가하세요</div>
+                        </div>
                     </div>
                 </div>
-                <button type="submit" class="calculate-btn">밸런스 계산하기</button>
+                <button type="submit" class="calculate-btn" id="calculate_btn" disabled>밸런스 계산하기</button>
             </form>
             
             <!-- 가상 팀 결과 -->
             {% if virtual_team_result %}
             <div class="virtual-result">
                 <h3>📊 팀 밸런스 분석 결과</h3>
+                <div class="balance-status">
+                    밸런스 상태: {{ virtual_team_result.balance_status }}
+                </div>
                 <div class="virtual-teams">
                     <div class="virtual-team team1">
                         <h4>팀 1</h4>
                         <div class="avg-lp">평균 LP: {{ virtual_team_result.team1_avg_lp }}</div>
+                        <div class="tier">티어: {{ virtual_team_result.team1_tier }}</div>
                         <div class="winrate">기대승률: {{ virtual_team_result.expected_winrate_team1 }}%</div>
                         <div class="lp-changes">
                             <div class="lp-change-item">
@@ -374,6 +330,7 @@
                     <div class="virtual-team team2">
                         <h4>팀 2</h4>
                         <div class="avg-lp">평균 LP: {{ virtual_team_result.team2_avg_lp }}</div>
+                        <div class="tier">티어: {{ virtual_team_result.team2_tier }}</div>
                         <div class="winrate">기대승률: {{ virtual_team_result.expected_winrate_team2 }}%</div>
                         <div class="lp-changes">
                             <div class="lp-change-item">
@@ -389,15 +346,7 @@
                 </div>
                 <div style="text-align: center; font-size: 1.2em; font-weight: bold; color: #ffd600;">
                     LP 차이: {{ virtual_team_result.lp_diff }} | 
-                    {% if virtual_team_result.lp_diff <= 50 %}
-                        매우 균형한 매치
-                    {% elif virtual_team_result.lp_diff <= 100 %}
-                        균형한 매치
-                    {% elif virtual_team_result.lp_diff <= 150 %}
-                        약간 불균형한 매치
-                    {% else %}
-                        불균형한 매치
-                    {% endif %}
+                    LP 범위: 팀1 {{ virtual_team_result.team1_lp_range }}, 팀2 {{ virtual_team_result.team2_lp_range }}
                 </div>
             </div>
             {% endif %}
@@ -405,55 +354,96 @@
     </div>
     
     <script>
-        function addUser(team) {
-            const input = document.getElementById(team + '_input');
-            const members = document.getElementById(team + '_members');
-            const userName = input.value.trim();
+        let currentTeam = 'team1'; // 현재 선택된 팀
+        let selectedUsers = new Set(); // 선택된 유저들
+        
+        function addUserToTeam(userName, userLp) {
+            // 중복 체크
+            if (selectedUsers.has(userName)) {
+                alert('이미 선택된 유저입니다.');
+                return;
+            }
             
-            if (userName) {
-                // 중복 체크
-                const existingMembers = members.querySelectorAll('.team-member');
-                let isDuplicate = false;
-                existingMembers.forEach(member => {
-                    if (member.querySelector('.member-name').textContent === userName) {
-                        isDuplicate = true;
-                    }
-                });
-                
-                if (!isDuplicate) {
-                    const memberDiv = document.createElement('div');
-                    memberDiv.className = 'team-member';
-                    memberDiv.innerHTML = `
-                        <span class="member-name">${userName}</span>
-                        <button type="button" class="remove-member" onclick="removeMember(this)">제거</button>
-                        <input type="hidden" name="${team}_users[]" value="${userName}">
-                    `;
-                    members.appendChild(memberDiv);
-                    input.value = '';
-                } else {
-                    alert('이미 추가된 유저입니다.');
+            // 팀 멤버 추가
+            const members = document.getElementById(currentTeam + '_members');
+            const placeholder = members.querySelector('.team-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            const memberDiv = document.createElement('div');
+            memberDiv.className = 'team-member';
+            memberDiv.innerHTML = `
+                <span class="member-name">${userName} (${userLp} LP)</span>
+                <button type="button" class="remove-member" onclick="removeMember('${userName}', this)">제거</button>
+                <input type="hidden" name="${currentTeam}_users[]" value="${userName}">
+            `;
+            members.appendChild(memberDiv);
+            
+            // 선택된 유저에 추가
+            selectedUsers.add(userName);
+            
+            // 유저 아이템 비활성화
+            const userItems = document.querySelectorAll('.user-item');
+            userItems.forEach(item => {
+                if (item.querySelector('.user-name').textContent === userName) {
+                    item.classList.add('selected');
+                    item.onclick = null;
                 }
-            }
+            });
+            
+            // 팀 전환
+            currentTeam = currentTeam === 'team1' ? 'team2' : 'team1';
+            
+            // 계산 버튼 활성화 체크
+            checkCalculateButton();
         }
         
-        function removeMember(button) {
+        function removeMember(userName, button) {
             button.parentElement.remove();
+            selectedUsers.delete(userName);
+            
+            // 유저 아이템 다시 활성화
+            const userItems = document.querySelectorAll('.user-item');
+            userItems.forEach(item => {
+                if (item.querySelector('.user-name').textContent === userName) {
+                    item.classList.remove('selected');
+                    item.onclick = function() {
+                        addUserToTeam('{{ user.name }}', {{ user.current_lp }});
+                    };
+                }
+            });
+            
+            // 팀이 비어있으면 플레이스홀더 추가
+            const members = button.parentElement.parentElement;
+            if (members.children.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'team-placeholder';
+                placeholder.textContent = '유저를 클릭하여 추가하세요';
+                members.appendChild(placeholder);
+            }
+            
+            // 계산 버튼 활성화 체크
+            checkCalculateButton();
         }
         
-        // Enter 키로 유저 추가
-        document.getElementById('team1_input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addUser('team1');
+        function checkCalculateButton() {
+            const team1Members = document.querySelectorAll('#team1_members .team-member').length;
+            const team2Members = document.querySelectorAll('#team2_members .team-member').length;
+            const calculateBtn = document.getElementById('calculate_btn');
+            
+            if (team1Members > 0 && team2Members > 0) {
+                calculateBtn.disabled = false;
+            } else {
+                calculateBtn.disabled = true;
             }
-        });
+        }
         
-        document.getElementById('team2_input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addUser('team2');
-            }
-        });
+        // 팀 선택 표시
+        function selectTeam(team) {
+            currentTeam = team;
+            // 팀 선택 표시 업데이트 (선택사항)
+        }
     </script>
 </body>
 </html> 
