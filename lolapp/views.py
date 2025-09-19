@@ -450,12 +450,28 @@ def search(request):
                     })
                 
                 # 해당 게임의 승리팀/패배팀 유저/챔피언 리스트
-                win_gamedata = GameData.objects.filter(game=gd.game, result='win').select_related('user')[:5]
-                lose_gamedata = GameData.objects.filter(game=gd.game, result='lose').select_related('user')[:5]
+                # 라인 순서대로 정렬: TOP, JUG, MID, ADC, SUP
+                line_order = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
+                
+                win_gamedata = GameData.objects.filter(game=gd.game, result='win').select_related('user')
+                lose_gamedata = GameData.objects.filter(game=gd.game, result='lose').select_related('user')
+                
+                # 라인 순서대로 정렬
+                win_gamedata_sorted = []
+                lose_gamedata_sorted = []
+                
+                for line in line_order:
+                    win_player = win_gamedata.filter(line=line).first()
+                    lose_player = lose_gamedata.filter(line=line).first()
+                    if win_player:
+                        win_gamedata_sorted.append(win_player)
+                    if lose_player:
+                        lose_gamedata_sorted.append(lose_player)
+                
                 win_users = []
                 lose_users = []
                 
-                for ugd in win_gamedata:
+                for ugd in win_gamedata_sorted:
                     champ_obj = Champion.objects.filter(name=ugd.champion).first()
                     champ_img = champ_obj.champ_id if champ_obj else ugd.champion
                     win_users.append({
@@ -469,7 +485,7 @@ def search(request):
                         'ai_score': int(ugd.ai_score),
                     })
                 
-                for ugd in lose_gamedata:
+                for ugd in lose_gamedata_sorted:
                     champ_obj = Champion.objects.filter(name=ugd.champion).first()
                     champ_img = champ_obj.champ_id if champ_obj else ugd.champion
                     lose_users.append({
@@ -644,10 +660,54 @@ def search(request):
 
 def rank(request):
     """LP 기반 랭킹 뷰"""
+    # 정렬 파라미터 가져오기
+    sort_by = request.GET.get('sort', 'lp')  # 기본값: LP
+    sort_order = request.GET.get('order', 'desc')  # 기본값: 내림차순
+    
+    # 챔피언별 정렬 파라미터
+    champ_sort_by = request.GET.get('champ_sort', 'winrate')
+    champ_sort_order = request.GET.get('champ_order', 'desc')
+    
+    # 라인별 정렬 파라미터
+    line_sort_by = request.GET.get('line_sort', 'winrate')
+    line_sort_order = request.GET.get('line_order', 'desc')
+    
+    # 활성화된 탭 파라미터 추가
+    active_tab = request.GET.get('tab', 'overall')  # 기본값: 전체 순위
+    
+    # 라인 필터 파라미터 추가
+    champ_line_filter = request.GET.get('champ_line', 'all')  # 챔피언별 승률 라인 필터
+    line_line_filter = request.GET.get('line_line', 'all')    # 라인별 순위 라인 필터
+    
     # 1. LP 기반 전체 유저 순위
     user_stats = get_lp_rank_user_stats()
+    
+    # 정렬 적용 (정렬 해제 기능 추가)
+    if sort_order == 'none':
+        # 정렬 해제 - 원래 순서 유지 (LP 기준 내림차순)
+        user_stats = sorted(user_stats, key=lambda x: x['lp'], reverse=True)
+    elif sort_by == 'games':
+        user_stats = sorted(user_stats, key=lambda x: x['total'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'win':
+        user_stats = sorted(user_stats, key=lambda x: x['win'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'lose':
+        user_stats = sorted(user_stats, key=lambda x: x['lose'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'winrate':
+        user_stats = sorted(user_stats, key=lambda x: x['winrate'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'kda':
+        user_stats = sorted(user_stats, key=lambda x: x['kda'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'tier':
+        # 티어별 정렬 (나락계 < 중간계 < 천상계)
+        tier_order = {'나락계': 1, '중간계': 2, '천상계': 3}
+        user_stats = sorted(user_stats, key=lambda x: tier_order.get(x['tier'], 0), reverse=(sort_order == 'desc'))
+    elif sort_by == 'best':
+        user_stats = sorted(user_stats, key=lambda x: x['best_count'], reverse=(sort_order == 'desc'))
+    elif sort_by == 'worst':
+        user_stats = sorted(user_stats, key=lambda x: x['worst_count'], reverse=(sort_order == 'desc'))
+    else:  # 기본값: LP
+        user_stats = sorted(user_stats, key=lambda x: x['lp'], reverse=(sort_order == 'desc'))
 
-    # 2. 챔피언별 승률 (승률 높은 순으로 정렬)
+    # 2. 챔피언별 승률 (정렬 기능 추가)
     champ_stats = (
         GameData.objects.values('champion')
         .annotate(
@@ -701,10 +761,28 @@ def rank(request):
             'kda': kda,
         })
     
-    # 승률이 높은 순으로 정렬, 승률이 같으면 KDA가 높은 순으로 정렬
-    champion_stats = sorted(champion_stats, key=lambda x: (-x['winrate'], -x['kda']))
+    # 챔피언별 정렬 적용
+    if champ_sort_order == 'none':
+        # 정렬 해제 - 원래 순서 유지 (승률 높은 순)
+        champion_stats = sorted(champion_stats, key=lambda x: (-x['winrate'], -x['kda']))
+    elif champ_sort_by == 'games':
+        champion_stats = sorted(champion_stats, key=lambda x: x['games'], reverse=(champ_sort_order == 'desc'))
+    elif champ_sort_by == 'win':
+        champion_stats = sorted(champion_stats, key=lambda x: x['win'], reverse=(champ_sort_order == 'desc'))
+    elif champ_sort_by == 'lose':
+        champion_stats = sorted(champion_stats, key=lambda x: x['lose'], reverse=(champ_sort_order == 'desc'))
+    elif champ_sort_by == 'winrate':
+        champion_stats = sorted(champion_stats, key=lambda x: x['winrate'], reverse=(champ_sort_order == 'desc'))
+    elif champ_sort_by == 'kda':
+        champion_stats = sorted(champion_stats, key=lambda x: x['kda'], reverse=(champ_sort_order == 'desc'))
+    else:  # 기본값: 승률
+        champion_stats = sorted(champion_stats, key=lambda x: (-x['winrate'], -x['kda']))
 
-    # 3. LP 기반 라인별 순위표
+    # 챔피언별 라인 필터 적용 (champion_stats 생성 후 추가)
+    if champ_line_filter != 'all':
+        champion_stats = [c for c in champion_stats if c['line'] == champ_line_filter]
+    
+    # 3. LP 기반 라인별 순위표 (정렬 기능 추가)
     line_keys = ['TOP', 'JUG', 'MID', 'ADC', 'SUP']
     line_user_stats = []
     
@@ -749,13 +827,64 @@ def rank(request):
                 'tier': tier,
             })
     
-    # 라인별로 그룹화하여 각 라인 내에서 승률이 높은 순으로 정렬
-    line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['winrate'], -x['kda']))
+    # 라인별 라인 필터 적용 (정렬 전에 적용)
+    if line_line_filter != 'all':
+        line_user_stats = [l for l in line_user_stats if l['line'] == line_line_filter]
     
-    # 전체 정렬용 리스트 (LP 높은 순, LP 같으면 승률 높은 순, 승률도 같으면 KDA 높은 순)
-    all_line_user_stats = sorted(line_user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
+    # 라인별 정렬 적용 (필터 적용 후)
+    if line_sort_order == 'none':
+        # 정렬 해제 - 원래 순서 유지 (LP 높은 순)
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lp'], -x['winrate'], -x['kda']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
+    elif line_sort_by == 'games':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['total'] if line_sort_order == 'desc' else x['total']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['total'] if line_sort_order == 'desc' else x['total'])
+    elif line_sort_by == 'win':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['win'] if line_sort_order == 'desc' else x['win']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['win'] if line_sort_order == 'desc' else x['win'])
+    elif line_sort_by == 'lose':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lose'] if line_sort_order == 'desc' else x['lose']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['lose'] if line_sort_order == 'desc' else x['lose'])
+    elif line_sort_by == 'winrate':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['winrate'] if line_sort_order == 'desc' else x['winrate']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['winrate'] if line_sort_order == 'desc' else x['winrate'])
+    elif line_sort_by == 'kda':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['kda'] if line_sort_order == 'desc' else x['kda']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['kda'] if line_sort_order == 'desc' else x['kda'])
+    elif line_sort_by == 'tier':
+        tier_order = {'나락계': 1, '중간계': 2, '천상계': 3}
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -tier_order.get(x['tier'], 0) if line_sort_order == 'desc' else tier_order.get(x['tier'], 0)))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -tier_order.get(x['tier'], 0) if line_sort_order == 'desc' else tier_order.get(x['tier'], 0))
+    elif line_sort_by == 'lp':
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lp'] if line_sort_order == 'desc' else x['lp']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: -x['lp'] if line_sort_order == 'desc' else x['lp'])
+    else:  # 기본값: LP 높은 순
+        if line_line_filter == 'all':
+            line_user_stats = sorted(line_user_stats, key=lambda x: (x['line'], -x['lp'], -x['winrate'], -x['kda']))
+        else:
+            line_user_stats = sorted(line_user_stats, key=lambda x: (-x['lp'], -x['winrate'], -x['kda']))
+            line_user_stats = sorted(line_user_stats, key=lambda x: (-x['winrate'], -x['kda']))
+    
+    # 전체 정렬용 리스트 (정렬된 line_user_stats와 동일하게 설정)
+    all_line_user_stats = line_user_stats
 
-    # 4. user별 상대전적 (실제 게임 데이터 기반) - 기존 로직 유지
+    # 4. user별 상대전적 (판수 많은 순으로 정렬)
     vs_stats = {}
     for line in line_keys:
         # 같은 이름의 유저들을 그룹화하여 처리
@@ -881,6 +1010,9 @@ def rank(request):
                             }
                         ))
         
+        # 판수 많은 순으로 정렬
+        pairs = sorted(pairs, key=lambda x: x[0]['total'] + x[1]['total'], reverse=True)
+        
         # 라인 키를 한글로 변경
         line_key_map = {
             'TOP': '탑',
@@ -898,8 +1030,16 @@ def rank(request):
         'line_user_stats': line_user_stats,
         'all_line_user_stats': all_line_user_stats,
         'vs_stats': vs_stats,
+        'current_sort': sort_by,
+        'current_order': sort_order,
+        'current_champ_sort': champ_sort_by,
+        'current_champ_order': champ_sort_order,
+        'current_line_sort': line_sort_by,
+        'current_line_order': line_sort_order,
+        'active_tab': active_tab,  # 추가
+        'champ_line_filter': champ_line_filter,  # 추가
+        'line_line_filter': line_line_filter,    # 추가
     })
-
 
 @csrf_exempt
 def upload(request):
