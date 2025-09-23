@@ -231,11 +231,14 @@ def main(request):
         for row in game_gamedata:
             team_kills[row.result] += row.kill
             
-        rows = []
+        # 팀별로 분리하고 각 팀 내에서 라인 순서대로 정렬
+        win_team = []
+        lose_team = []
+        
         for row in game_gamedata:
             kda = (row.kill + row.assist) / (row.death if row.death != 0 else 1)
             champion_img = champion_name_map.get(row.champion, '')
-            rows.append({
+            row_data = {
                 'result': row.result,
                 'user': row.user,
                 'line': row.line,
@@ -252,7 +255,20 @@ def main(request):
                 'placement': row.placement,
                 'lp_change': row.lp_change,  # LP 변화량 추가
                 'lp_after': row.lp_after,   # 경기 후 LP 추가
-            })
+            }
+            
+            if row.result == 'win':
+                win_team.append(row_data)
+            else:
+                lose_team.append(row_data)
+        
+        # 라인 순서대로 정렬 (탑-정글-미드-원딜-서폿)
+        line_order = {'TOP': 1, 'JUG': 2, 'MID': 3, 'ADC': 4, 'SUP': 5}
+        win_team.sort(key=lambda x: line_order.get(x['line'], 6))
+        lose_team.sort(key=lambda x: line_order.get(x['line'], 6))
+        
+        # 승리팀 먼저, 그 다음 패배팀 순서로 재조합
+        rows = win_team + lose_team
         recent_games_rows.append({'date': game.date, 'rows': rows})
     
     return render(request, 'lolapp/main.html', {
