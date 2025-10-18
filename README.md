@@ -84,7 +84,7 @@
 - `calculate_expected_winrate()` : 두 팀 평균 LP 차이 기반 기대 승률 계산  
 - `calculate_lp_changes()` : 승/패별 LP 증감치 결정  
 - `get_tier_from_lp()` : LP → 티어 변환  
-- LP 로그는 `GameData`에 `lp_before`, `lp_after`, `lp_change`로 기록:contentReference[oaicite:7]{index=7}:contentReference[oaicite:8]{index=8}
+- LP 로그는 `GameData`에 `lp_before`, `lp_after`, `lp_change`로 기록
 
 ---
 
