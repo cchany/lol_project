@@ -74,6 +74,7 @@ ACE_STATS/
  ┗ settings.py              # Render 서버 및 환경설정
 
 
+
 🌐 배포 환경 (Render)
 
 서버 및 DB: Render 클라우드 (PostgreSQL + Gunicorn)
