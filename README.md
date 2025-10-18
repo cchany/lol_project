@@ -26,27 +26,27 @@
   - 업셋 승리 시 추가 보상  
 - **티어 경계 보호 시스템**  
   - 100 / 200점 구간 1패 보호  
-  - 승급은 즉시, 강등은 1패 보호 적용:contentReference[oaicite:0]{index=0}
+  - 승급은 즉시, 강등은 1패 보호 적용
 
 ---
 
 ### ⚖️ 팀 밸런스 계산
 - 유저들의 최근 LP 및 승률, KDA를 기반으로 **자동 팀 구성 시 밸런스 점수 계산**
 - 평균 LP, 티어, 기대 승률을 시각화  
-- 팀 구성 후 가상 승률 예측 및 LP 변화 시뮬레이션:contentReference[oaicite:1]{index=1}
+- 팀 구성 후 가상 승률 예측 및 LP 변화 시뮬레이션
 
 ---
 
 ### 🕵️ 전적 검색 & 통계
 - 소환사명 검색 시 개인 통계 및 최근 경기 데이터 조회
 - **챔피언별 승률, KDA, CS, AI 점수** 시각화  
-- **Chart.js 기반 그래프**로 최근 20경기 성과 표시:contentReference[oaicite:2]{index=2}
+- **Chart.js 기반 그래프**로 최근 20경기 성과 표시
 
 ---
 
 ### 🧩 경기 데이터 업로드 / 수정
 - 게임 결과 텍스트를 **한 번에 붙여넣어 자동 분석**
-- DB에 자동 저장 후 수정 페이지에서 세부 항목 편집 가능:contentReference[oaicite:3]{index=3}:contentReference[oaicite:4]{index=4}
+- DB에 자동 저장 후 수정 페이지에서 세부 항목 편집 가능
 
 ---
 
@@ -57,7 +57,7 @@
   - **GameData** (개별 경기 기록)
   - **Game** (경기 메타데이터)
 - LP 로직 관리 모듈: `lp_system.py`
-- `views.py`에서 LP 계산, 랭킹, 통계 집계, 페이지 렌더링 처리:contentReference[oaicite:5]{index=5}
+- `views.py`에서 LP 계산, 랭킹, 통계 집계, 페이지 렌더링 처리
 
 ---
 
@@ -69,7 +69,7 @@
   - `upload.html` : 경기결과 입력 페이지  
   - `edit_game.html` : 경기 기록 수정  
   - `patchnote.html` : 패치노트 기록 페이지  
-  - `header.html` : 전역 상단 네비게이션바:contentReference[oaicite:6]{index=6}
+  - `header.html` : 전역 상단 네비게이션바
 
 - **디자인 특징**  
   - 다크 테마 기반 UI (#1a1a1a 톤)  
