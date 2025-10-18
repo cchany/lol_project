@@ -1,85 +1,102 @@
 # 🕹️ ACE Stat’s  
-**League of Legends 커스텀 게임 전적 관리 시스템 (Fullstack Django Project)**  
-
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Django](https://img.shields.io/badge/Django-5.0-0C4B33?logo=django)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)
-![Render](https://img.shields.io/badge/Deployed%20on-Render-00C7B7?logo=render)
-![Chart.js](https://img.shields.io/badge/Chart.js-Visualization-FF6384?logo=chartdotjs)
+### League of Legends 커스텀 게임 전적 관리 시스템  
+> **Fullstack Django Project | PostgreSQL | Render | Chart.js**
 
 ---
 
-📖 프로젝트 개요
+## 📖 프로젝트 개요
+**ACE Stat’s**는 League of Legends 내전(사용자 설정 게임)의 데이터를 자동으로 관리하는 Django 기반 웹 애플리케이션입니다.  
+경기 결과를 업로드하면 자동으로 **LP 점수 계산, 랭킹, 팀 밸런스 평가, 전적 통계 시각화**까지 제공합니다.  
 
-ACE Stat’s는 League of Legends 내전(사용자 설정 게임) 데이터를 자동으로 관리하는 Django 기반 웹 애플리케이션입니다.
-경기 결과를 업로드하면 자동으로 LP 점수, 랭킹, 팀 밸런스, 전적 통계 시각화를 제공합니다.
+이 프로젝트는 **백엔드, 프론트엔드, 배포까지 1인 개발**로 진행되었으며  
+현재 **Render 서버에서 PostgreSQL과 함께 운영 중**입니다.
 
-이 프로젝트는 백엔드, 프론트엔드, 서버 배포까지 1인 개발로 진행되었으며,
-현재 Render 서버에서 PostgreSQL과 함께 운영되고 있습니다.
+---
 
-🚀 주요 기능
-🧮 랭킹 시스템
+## 🚀 주요 기능
 
-경기별 KDA, 킬관여율(KP), 승패 여부를 기반으로 LP(League Point) 계산
+### 🧮 랭킹 시스템
+- **LP (League Point) 기반 티어 시스템**  
+  - 나락계 (0–99 LP)  
+  - 중간계 (100–199 LP)  
+  - 천상계 (200–299 LP)
+- **공정한 LP 변동 알고리즘**  
+  - 로지스틱 기대승률 기반  
+  - 두 팀의 평균 LP 차이에 따라 ±10~30 LP 변동  
+  - 업셋 승리 시 추가 보상  
+- **티어 경계 보호 시스템**  
+  - 100 / 200점 구간 1패 보호  
+  - 승급은 즉시, 강등은 1패 보호 적용:contentReference[oaicite:0]{index=0}
 
-최근 경기 가중치(0.4~1.0)를 적용하여 활동도 기반 랭킹 산정
+---
 
-LP 총합 기준으로 Iron ~ Challenger 티어 자동 분류
+### ⚖️ 팀 밸런스 계산
+- 유저들의 최근 LP 및 승률, KDA를 기반으로 **자동 팀 구성 시 밸런스 점수 계산**
+- 평균 LP, 티어, 기대 승률을 시각화  
+- 팀 구성 후 가상 승률 예측 및 LP 변화 시뮬레이션:contentReference[oaicite:1]{index=1}
 
-# LP 계산 로직 (간단 예시)
-LP = (KDA * 10) + (KP * 5) + (50 if is_win else 0)
-if not is_win:
-    LP *= 0.85
+---
 
-⚔️ 팀 밸런스 계산기 (balance.html)
+### 🕵️ 전적 검색 & 통계
+- 소환사명 검색 시 개인 통계 및 최근 경기 데이터 조회
+- **챔피언별 승률, KDA, CS, AI 점수** 시각화  
+- **Chart.js 기반 그래프**로 최근 20경기 성과 표시:contentReference[oaicite:2]{index=2}
 
-플레이어의 LP, 포지션, 승률 데이터를 기반으로
-두 팀의 밸런스(0~100%) 계산
+---
 
-승률 예측 및 균형 잡힌 팀 자동 추천 기능
+### 🧩 경기 데이터 업로드 / 수정
+- 게임 결과 텍스트를 **한 번에 붙여넣어 자동 분석**
+- DB에 자동 저장 후 수정 페이지에서 세부 항목 편집 가능:contentReference[oaicite:3]{index=3}:contentReference[oaicite:4]{index=4}
 
-📊 전적 검색 / 통계 (search.html)
+---
 
-유저별 KDA, KP, 승률, 챔피언별 통계 시각화
+### 🧱 데이터 구조 및 백엔드
+- 주요 모델:
+  - **User** (플레이어 기본 정보)
+  - **Champion** (챔피언 데이터)
+  - **GameData** (개별 경기 기록)
+  - **Game** (경기 메타데이터)
+- LP 로직 관리 모듈: `lp_system.py`
+- `views.py`에서 LP 계산, 랭킹, 통계 집계, 페이지 렌더링 처리:contentReference[oaicite:5]{index=5}
 
-Chart.js를 사용한 도넛/바 그래프 표현
+---
 
-🧾 경기 업로드 / 수정 (upload.html, edit_game.html)
+## 🎨 프론트엔드 구성
+- **템플릿 구조 (Django Template + Static CSS)**  
+  - `main.html` : 메인 페이지 및 전적 진입 메뉴  
+  - `search.html` : 전적 검색 페이지  
+  - `balance.html` : 팀 밸런스 시뮬레이터  
+  - `upload.html` : 경기결과 입력 페이지  
+  - `edit_game.html` : 경기 기록 수정  
+  - `patchnote.html` : 패치노트 기록 페이지  
+  - `header.html` : 전역 상단 네비게이션바:contentReference[oaicite:6]{index=6}
 
-경기 로그를 텍스트로 입력하면 자동 파싱 후 DB에 저장
+- **디자인 특징**  
+  - 다크 테마 기반 UI (#1a1a1a 톤)  
+  - Material / Riot UI 감성 컬러 (#1976d2, #4caf50, #ef5350)  
+  - 반응형 대응 (모바일 / 태블릿 환경 최적화)
 
-관리자 페이지에서 경기 기록 수정/삭제 가능
+---
 
-⚙️ 기술 스택
-구분	내용
-Framework	Django (Python 3.11)
-Frontend	HTML5, CSS3, JavaScript (Chart.js)
-Backend	Django ORM, RESTful API
-Database	PostgreSQL (Render 클라우드 운영)
-Infra	Render (Gunicorn + PostgreSQL)
-Version Control	GitHub
-📁 프로젝트 구조
-ACE_STATS/
- ┣ views.py                 # 주요 로직 (랭킹, 전적 파싱, 밸런스 계산)
- ┣ models.py                # DB 모델 정의
- ┣ urls.py                  # 라우팅 관리
- ┣ templates/
- ┃ ┣ main.html              # 메인 페이지
- ┃ ┣ search.html            # 전적 검색 / 통계
- ┃ ┣ upload.html            # 경기 업로드
- ┃ ┣ balance.html           # 팀 밸런스 계산기
- ┃ ┣ edit_game.html         # 관리자 페이지
- ┃ ┗ patchnote.html         # 버전 로그
- ┣ static/                  # CSS / JS / 이미지 자원
- ┗ settings.py              # Render 서버 및 환경설정
+## 📊 LP 시스템 알고리즘 (핵심 로직)
+- LP 계산 및 티어 변환은 `lp_system.py`에서 관리
+- `process_game_lp_changes()` : 경기 결과 기반 LP 조정  
+- `calculate_expected_winrate()` : 두 팀 평균 LP 차이 기반 기대 승률 계산  
+- `calculate_lp_changes()` : 승/패별 LP 증감치 결정  
+- `get_tier_from_lp()` : LP → 티어 변환  
+- LP 로그는 `GameData`에 `lp_before`, `lp_after`, `lp_change`로 기록:contentReference[oaicite:7]{index=7}:contentReference[oaicite:8]{index=8}
 
+---
 
+## 🧠 기술 스택
+| 분야 | 기술 |
+|------|------|
+| **Backend** | Python 3.11, Django 5.x |
+| **Database** | PostgreSQL (Render 연동) |
+| **Frontend** | HTML5, CSS3, JavaScript (Chart.js) |
+| **Deployment** | Render (Gunicorn + PostgreSQL) |
+| **Version Control** | Git / GitHub |
+| **Etc** | Django ORM, CSRF 보호, Template Inheritance |
 
-🌐 배포 환경 (Render)
-
-서버 및 DB: Render 클라우드 (PostgreSQL + Gunicorn)
-
-배포 방식: GitHub 자동 빌드 및 배포
-
-환경변수: Render Dashboard → Environment Variables에서 관리
+---
 
